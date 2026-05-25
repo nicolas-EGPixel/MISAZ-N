@@ -53,6 +53,7 @@ void main() {
             textAlign: TextAlign.center,
           ),
         ),
+        Image.asset("assets/images/mdzs.jpg", width: 200, height: 200),
         ],
         ),
         floatingActionButton: Row(
