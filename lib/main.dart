@@ -42,14 +42,19 @@ void main() {
           ],
         ),
 
-        body: const Center(
+        body:
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center, //Esto obliga a que el bloque (la columna) se quede en la pocisión indicada, hasta abajo
+          children: [
+         const Center(
           child: Text(
             "Esta es mi primera APP\nen el framework de Flutter",
             style: TextStyle(fontSize: 20),
             textAlign: TextAlign.center,
           ),
         ),
-
+        ],
+        ),
         floatingActionButton: Row(
           mainAxisAlignment: MainAxisAlignment.end, //Esto obliga a que el bloque (la columna) se quede en la pocisión indicada, hasta abajo
           children: [
