@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'perfil_page.dart';
+import 'mapa.dart';
+import 'favoritos.dart';
+import 'perfil.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,19 +10,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-
-  void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => PerfilPage()),
-      );
-    }
-  }
 
   final List<Map<String, dynamic>> categories = [
     {"icon": Icons.local_pizza, "label": "Pizzas"},
@@ -33,6 +22,19 @@ class _HomePageState extends State<HomePage> {
     {"icon": Icons.local_drink, "label": "Bebidas"},
   ];
 
+  final List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _pages.addAll([
+      _inicioPage(),   // Inicio
+      MapaPage(),      // Mapa
+      FavoritosPage(), // Favoritos
+      PerfilPage(),    // Perfil
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,99 +42,29 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.deepOrange,
         elevation: 0,
-        title: Text("¡Hola! ¿Qué quieres comer hoy?"),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Barra de búsqueda
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Buscar alimentos...",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Categorías
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: categories.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                childAspectRatio: 0.8,
-              ),
-              itemBuilder: (context, index) {
-                final item = categories[index];
-                return Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Colors.deepOrange.shade100,
-                      child: Icon(item["icon"], size: 28, color: Colors.deepOrange),
-                    ),
-                    SizedBox(height: 6),
-                    Text(item["label"], style: TextStyle(fontSize: 12)),
-                  ],
-                );
-              },
-            ),
-            SizedBox(height: 30),
-
-            // Recomendaciones
-            Text("Recomendaciones",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 15),
-            Container(
-              height: 220,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _foodCard(
-                    "Pizza Margarita",
-                    "Pizza clásica con tomate, mozzarella y albahaca fresca.",
-                    "assets/images/pizza.webp",
-                    4.5,
-                    128,
-                    12.99,
-                  ),
-                  _foodCard(
-                    "Hamburguesa BBQ",
-                    "Carne angus, cheddar, bacon y salsa BBQ.",
-                    "assets/images/burger.webp",
-                    4.7,
-                    89,
-                    10.50,
-                  ),
-                  _foodCard(
-                    "Tacos Variado",
-                    "Selección de 24 piezas premium.",
-                    "assets/images/tacos.webp",
-                    4.8, 
-                    256, 
-                    24.99,
-                  ),
-                ],
-              ),
-            ),
-          ],
+        automaticallyImplyLeading: false, // 🔸 Esto quita la flecha de retroceso
+        title: Text(
+          _selectedIndex == 0
+              ? "¡Hola! ¿Qué quieres comer hoy?"
+              : _selectedIndex == 1
+                  ? "Mapa"
+                  : _selectedIndex == 2
+                      ? "Mis Favoritos"
+                      : "Perfil",
         ),
       ),
+      body: _pages[_selectedIndex],
 
       // ---------------- BOTTOM NAVIGATION ----------------
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepOrange,
         unselectedItemColor: Colors.grey,
-        onTap: _onNavItemTapped,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -155,11 +87,96 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Página de inicio con categorías y recomendaciones
+  Widget _inicioPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Barra de búsqueda
+          TextField(
+            decoration: InputDecoration(
+              hintText: "Buscar alimentos...",
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
+          SizedBox(height: 20),
+
+          // Categorías
+          GridView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: categories.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 0.8,
+            ),
+            itemBuilder: (context, index) {
+              final item = categories[index];
+              return Column(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.deepOrange.shade100,
+                    child: Icon(item["icon"], size: 28, color: Colors.deepOrange),
+                  ),
+                  SizedBox(height: 6),
+                  Text(item["label"], style: TextStyle(fontSize: 12)),
+                ],
+              );
+            },
+          ),
+          SizedBox(height: 30),
+
+          // Recomendaciones en vertical
+          Text("Recomendaciones",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 15),
+          ListView(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              _foodCard(
+                "Pizza Margarita",
+                "Pizza clásica con tomate, mozzarella y albahaca fresca.",
+                "assets/images/pizza.webp",
+                4.5,
+                128,
+                12.99,
+              ),
+              _foodCard(
+                "Hamburguesa BBQ",
+                "Carne angus, cheddar, bacon y salsa BBQ.",
+                "assets/images/burger.webp",
+                4.7,
+                89,
+                10.50,
+              ),
+              _foodCard(
+                "Tacos Variado",
+                "Selección de 24 piezas premium.",
+                "assets/images/tacos.webp",
+                4.8,
+                256,
+                24.99,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _foodCard(String title, String description, String imagePath,
       double rating, int reviews, double price) {
     return Container(
-      width: 150,
-      margin: EdgeInsets.only(right: 12),
+      margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -171,19 +188,19 @@ class _HomePageState extends State<HomePage> {
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
             child: Image.asset(imagePath,
-                height: 90, width: 150, fit: BoxFit.cover),
+                height: 160, width: double.infinity, fit: BoxFit.cover),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
+                        fontWeight: FontWeight.bold, fontSize: 16)),
                 SizedBox(height: 4),
                 Text(description,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
                 SizedBox(height: 6),
@@ -192,14 +209,14 @@ class _HomePageState extends State<HomePage> {
                     Icon(Icons.star, color: Colors.amber, size: 16),
                     Text("$rating",
                         style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.bold)),
+                            fontSize: 13, fontWeight: FontWeight.bold)),
                     Text(" ($reviews)", style: TextStyle(fontSize: 12)),
                   ],
                 ),
                 SizedBox(height: 6),
                 Text("€$price",
                     style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepOrange)),
               ],

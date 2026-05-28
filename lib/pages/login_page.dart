@@ -10,45 +10,107 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.restaurant_menu, size: 80, color: Colors.deepOrange),
-              SizedBox(height: 20),
-              Text("Mi Sazón", style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.bold, color: Colors.deepOrange)),
-              SizedBox(height: 30),
-              CustomInput(controller: emailController, label: "Correo electrónico"),
-              SizedBox(height: 15),
-              CustomInput(controller: passwordController, label: "Contraseña", obscure: true),
-              SizedBox(height: 25),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: Colors.orange.shade50, // 🔸 Fondo general
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Encabezado con color y texto
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              decoration: BoxDecoration(
+                color: Colors.deepOrange, // 🔸 Color de fondo del header
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40), // 🔸 Bordes redondeados
+                  bottomRight: Radius.circular(40),
                 ),
-                child: Text("Iniciar Sesión"),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => HomePage()),
-                  );
-                },
               ),
-              TextButton(
-                child: Text("¿No tienes cuenta? Regístrate"),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => RegisterPage()),
-                  );
-                },
+              child: Column(
+                children: [
+                  Icon(Icons.restaurant_menu, size: 80, color: Colors.white), // 🔸 Ícono blanco
+                  SizedBox(height: 10),
+                  Text(
+                    "Iniciar Sesión",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // 🔸 Texto blanco
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "Bienvenido a Mi Sazón 🍲",
+                    style: TextStyle(color: Colors.white70, fontSize: 16), // 🔸 Texto secundario
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            // Formulario
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  CustomInput(controller: emailController, label: "Correo electrónico"),
+                  SizedBox(height: 15),
+                  CustomInput(controller: passwordController, label: "Contraseña", obscure: true),
+                  SizedBox(height: 25),
+
+                  // Botón estilizado
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50),
+                      backgroundColor: Colors.deepOrange, // 🔸 Fondo naranja
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12), // 🔸 Bordes redondeados
+                      ),
+                      elevation: 4, // 🔸 Sombra
+                    ),
+                    child: Text(
+                      "Entrar",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // ✅ Texto blanco
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => HomePage()),
+                      );
+                    },
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Link para crear cuenta
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("¿No tienes cuenta? ",
+                          style: TextStyle(color: Colors.grey[700])),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => RegisterPage()),
+                          );
+                        },
+                        child: Text(
+                          "Regístrate",
+                          style: TextStyle(
+                            color: Colors.deepOrange, // 🔸 Texto naranja
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
