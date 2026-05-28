@@ -11,6 +11,7 @@ class CustomInput extends StatelessWidget {
     this.obscure = false,
   });
 
+
   @override
   Widget build(BuildContext context) {
     return TextField(
