@@ -1,89 +1,31 @@
 import 'package:flutter/material.dart';
+import 'pages/login_page.dart';
 
 void main() {
-  runApp(
-    MaterialApp(
+  runApp(const MyApp());
+}
 
-      home: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 253, 252, 198),
-        appBar: AppBar(
-          title: const Text("Mi primera aplicación en Flutter"),
-          centerTitle: true,
-          backgroundColor: const Color.fromARGB(255, 5, 104, 96),
-          titleTextStyle: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-          elevation: 4,
-          toolbarHeight: 75,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.horizontal(left: Radius.circular(10)),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.menu, color: Color.fromARGB(255, 115, 255, 255), size: 30),
-            onPressed: () {
-              print("Se ha presionado el botón del menú");
-            },
-          ),
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search, color: Colors.white, size: 30),
-              onPressed: () {
-                print("Se ha presionado el botón de búsqueda");
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.person_outline, color: Colors.white, size: 30),
-              onPressed: () {
-                print("Se ha presionado el botón del perfil");
-              },
-            ),
-          ],
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Mi Sazón',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.deepOrange,
+        scaffoldBackgroundColor: Colors.orange.shade50,
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+          fillColor: Colors.white,
         ),
-
-        body: const Center(
-          child: Text(
-            "Esta es mi primera APP\nen el framework de Flutter",
-            style: TextStyle(fontSize: 20),
-            textAlign: TextAlign.center,
-          ),
-        ),
-
-        floatingActionButton: Row(
-          mainAxisAlignment: MainAxisAlignment.end, //Esto obliga a que el bloque (la columna) se quede en la pocisión indicada, hasta abajo
-          children: [
-            FloatingActionButton(
-              heroTag: "Botón 1",
-              backgroundColor: const Color.fromARGB(255, 5, 104, 96),
-              onPressed: () { 
-                print("Se ha preadionado el botón flotante 1"); 
-              },
-              child: Icon(Icons.add, color: Colors.white, size: 30),
-            ),
-
-            FloatingActionButton(
-              heroTag: "Botón 2",
-              backgroundColor: const Color.fromARGB(255, 5, 104, 96),
-              onPressed: () { 
-                print("Se ha preadionado el botón flotante 2"); 
-              },
-              child: Icon(Icons.location_on, color: Colors.white, size: 30),
-            ),
-
-            FloatingActionButton(
-              heroTag: "Botón 3",
-              backgroundColor: const Color.fromARGB(255, 5, 104, 96),
-              onPressed: () { 
-                print("Se ha preadionado el botón flotante 3"); 
-              },
-              child: Icon(Icons.share, color: Colors.white, size: 30),
-            ),
-          ],
-        ),
-
       ),
-    ),
-  );
+
+      home: LoginPage(),
+    );
+  }
 }
