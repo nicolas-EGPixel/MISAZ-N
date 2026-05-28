@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 
 void main() {
-  runApp(MiSazonApp());
+  runApp(const MyApp());
 }
 
-class MiSazonApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,6 +24,7 @@ class MiSazonApp extends StatelessWidget {
           fillColor: Colors.white,
         ),
       ),
+
       home: LoginPage(),
     );
   }
