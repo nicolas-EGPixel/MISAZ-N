@@ -102,8 +102,8 @@ class _HomePageState extends State<HomePage> {
                     "Tacos Variado",
                     "Selección de 24 piezas premium.",
                     "assets/images/tacos.webp",
-                    4.8,
-                    256,
+                    4.8, 
+                    256, 
                     24.99,
                   ),
                 ],
@@ -148,7 +148,7 @@ class _HomePageState extends State<HomePage> {
   Widget _foodCard(String title, String description, String imagePath,
       double rating, int reviews, double price) {
     return Container(
-      width: 180,
+      width: 150,
       margin: EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> {
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
             child: Image.asset(imagePath,
-                height: 100, width: 180, fit: BoxFit.cover),
+                height: 90, width: 150, fit: BoxFit.cover),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
