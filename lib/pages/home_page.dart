@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'mapa.dart';
 import 'favoritos.dart';
 import 'perfil.dart';
+import 'food_detail_page.dart'; 
 
 class HomePage extends StatefulWidget {
   @override
@@ -20,6 +21,33 @@ class _HomePageState extends State<HomePage> {
     {"icon": Icons.set_meal, "label": "Pasta"},
     {"icon": Icons.cake, "label": "Postres"},
     {"icon": Icons.local_drink, "label": "Bebidas"},
+  ];
+
+  final List<Map<String, dynamic>> foods = [
+    {
+      "title": "Pizza Margarita",
+      "description": "Pizza clásica con tomate, mozzarella y albahaca fresca.",
+      "image": "assets/images/pizza.webp",
+      "rating": 4.5,
+      "reviews": 128,
+      "price": 12.99,
+    },
+    {
+      "title": "Hamburguesa BBQ",
+      "description": "Carne angus, cheddar, bacon y salsa BBQ.",
+      "image": "assets/images/burger.webp",
+      "rating": 4.7,
+      "reviews": 89,
+      "price": 10.50,
+    },
+    {
+      "title": "Tacos Variado",
+      "description": "Selección de 24 piezas premium.",
+      "image": "assets/images/tacos.webp",
+      "rating": 4.8,
+      "reviews": 256,
+      "price": 24.99,
+    },
   ];
 
   final List<Widget> _pages = [];
@@ -42,7 +70,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.deepOrange,
         elevation: 0,
-        automaticallyImplyLeading: false, // 🔸 Esto quita la flecha de retroceso
+        automaticallyImplyLeading: false,
         title: Text(
           _selectedIndex == 0
               ? "¡Hola! ¿Qué quieres comer hoy?"
@@ -138,92 +166,95 @@ class _HomePageState extends State<HomePage> {
           Text("Recomendaciones",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 15),
-          ListView(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            children: [
-              _foodCard(
-                "Pizza Margarita",
-                "Pizza clásica con tomate, mozzarella y albahaca fresca.",
-                "assets/images/pizza.webp",
-                4.5,
-                128,
-                12.99,
-              ),
-              _foodCard(
-                "Hamburguesa BBQ",
-                "Carne angus, cheddar, bacon y salsa BBQ.",
-                "assets/images/burger.webp",
-                4.7,
-                89,
-                10.50,
-              ),
-              _foodCard(
-                "Tacos Variado",
-                "Selección de 24 piezas premium.",
-                "assets/images/tacos.webp",
-                4.8,
-                256,
-                24.99,
-              ),
-            ],
+
+          // 🔹 Usamos Column en lugar de ListView
+          Column(
+            children: foods.map((food) {
+              return _foodCard(
+                food["title"],
+                food["description"],
+                food["image"],
+                food["rating"],
+                food["reviews"],
+                food["price"],
+              );
+            }).toList(),
           ),
         ],
       ),
     );
   }
 
+  // Tarjeta de comida
   Widget _foodCard(String title, String description, String imagePath,
       double rating, int reviews, double price) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.asset(imagePath,
-                height: 160, width: double.infinity, fit: BoxFit.cover),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                SizedBox(height: 4),
-                Text(description,
-                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis),
-                SizedBox(height: 6),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    Text("$rating",
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.bold)),
-                    Text(" ($reviews)", style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-                SizedBox(height: 6),
-                Text("€$price",
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepOrange)),
-              ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FoodDetailPage(
+              title: title,
+              description: description,
+              imagePath: imagePath,
+              rating: rating,
+              reviews: reviews,
+              price: price,
             ),
           ),
-        ],
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.asset(imagePath,
+                  height: 160, width: double.infinity, fit: BoxFit.cover),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  SizedBox(height: 4),
+                  Text(description,
+                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
+                  SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: Colors.amber, size: 16),
+                      Text("$rating",
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.bold)),
+                      Text(" ($reviews)", style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  Text("€$price",
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepOrange)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
