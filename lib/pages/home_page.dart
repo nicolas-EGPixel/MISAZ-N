@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'perfil_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -7,6 +8,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+
+  void _onNavItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => PerfilPage()),
+      );
+    }
+  }
 
   final List<Map<String, dynamic>> categories = [
     {"icon": Icons.local_pizza, "label": "Pizzas"},
@@ -118,11 +132,7 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepOrange,
         unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onTap: _onNavItemTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
