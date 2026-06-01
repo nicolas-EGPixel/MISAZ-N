@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
+// Importa otras páginas aquí
 
 void main() {
   runApp(const MyApp());
