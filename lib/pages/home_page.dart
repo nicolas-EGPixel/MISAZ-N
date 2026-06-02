@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'mapa.dart';
 import 'favoritos.dart';
 import 'perfil.dart';
-import 'entregas.dart';
 import 'food_detail_page.dart';
 
 // 🔸 Páginas extra
@@ -11,6 +10,16 @@ class PublicarPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text("Aquí podrás publicar tus productos 🛒",
+          style: TextStyle(fontSize: 18)),
+    );
+  }
+}
+
+class EntregasPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text("Aquí podrás gestionar tus entregas 🚚",
           style: TextStyle(fontSize: 18)),
     );
   }
