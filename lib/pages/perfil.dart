@@ -1,15 +1,66 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // 🔸 Para poder regresar al login al cerrar sesión
+import 'login_page.dart';
 
-class PerfilPage extends StatelessWidget {
+class PerfilPage extends StatefulWidget {
+  final Function(String) onRoleSelected; 
+  // 🔸 Callback para avisar al HomePage que se eligió un rol
+
+  PerfilPage({required this.onRoleSelected});
+
+  @override
+  _PerfilPageState createState() => _PerfilPageState();
+}
+
+class _PerfilPageState extends State<PerfilPage> {
+  void _showForm(String role) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Formulario para $role"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(labelText: "Nombre completo"),
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: "Teléfono"),
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: "Dirección"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text("Cancelar"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange,
+              ),
+              child: Text("Confirmar", style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                Navigator.pop(context);
+                widget.onRoleSelected(role); // 🔸 Avisamos al HomePage
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.orange.shade50,
-      body: SingleChildScrollView( // ✅ Scroll para evitar overflow
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            // 🔸 Encabezado con fondo naranja y datos de usuario
+            // 🔸 Encabezado
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 40),
@@ -24,42 +75,36 @@ class PerfilPage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage("assets/images/perfil.jpg"), // 🔸 Imagen de perfil
+                    backgroundImage: AssetImage("assets/images/perfil.jpg"),
                   ),
                   SizedBox(height: 10),
-                  Text(
-                    "Ranni",
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                  Text(
-                    "ranni@email.com",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
+                  Text("Juan Pérez",
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                  Text("juan.perez@email.com",
+                      style: TextStyle(color: Colors.white70, fontSize: 14)),
                 ],
               ),
             ),
 
             SizedBox(height: 20),
 
-            // 🔸 Sección de información personal
+            // 🔸 Información personal
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Información personal",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
                   ListTile(
                     leading: Icon(Icons.edit, color: Colors.deepOrange),
                     title: Text("Editar datos de usuario"),
-                    onTap: () {
-                      // Acción para editar datos
-                    },
+                    onTap: () {},
                   ),
                 ],
               ),
@@ -74,18 +119,18 @@ class PerfilPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Opciones de cuenta",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
                   ListTile(
                     leading: Icon(Icons.store, color: Colors.deepOrange),
                     title: Text("Convertirme en vendedor"),
-                    onTap: () {},
+                    onTap: () => _showForm("publicar"),
                   ),
                   ListTile(
                     leading: Icon(Icons.delivery_dining, color: Colors.deepOrange),
                     title: Text("Convertirme en repartidor"),
-                    onTap: () {},
+                    onTap: () => _showForm("entregas"),
                   ),
                   ListTile(
                     leading: Icon(Icons.history, color: Colors.deepOrange),
@@ -98,7 +143,7 @@ class PerfilPage extends StatelessWidget {
 
             SizedBox(height: 30),
 
-            // 🔸 Botón para cerrar sesión
+            // 🔸 Botón cerrar sesión
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
@@ -109,13 +154,11 @@ class PerfilPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  "Cerrar sesión",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white), // ✅ Texto blanco
-                ),
+                child: Text("Cerrar sesión",
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,

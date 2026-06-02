@@ -2,7 +2,19 @@ import 'package:flutter/material.dart';
 import 'mapa.dart';
 import 'favoritos.dart';
 import 'perfil.dart';
-import 'food_detail_page.dart'; 
+import 'entregas.dart';
+import 'food_detail_page.dart';
+
+// 🔸 Páginas extra
+class PublicarPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text("Aquí podrás publicar tus productos 🛒",
+          style: TextStyle(fontSize: 18)),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   @override
@@ -50,17 +62,50 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
-  final List<Widget> _pages = [];
+  late List<Widget> _pages;
+  late List<BottomNavigationBarItem> _navItems;
 
   @override
   void initState() {
     super.initState();
-    _pages.addAll([
+    _pages = [
       _inicioPage(),   // Inicio
       MapaPage(),      // Mapa
       FavoritosPage(), // Favoritos
-      PerfilPage(),    // Perfil
-    ]);
+      PerfilPage(onRoleSelected: _addRolePage), // Perfil con callback
+    ];
+
+    _navItems = const [
+      BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+      BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa"),
+      BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
+      BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+    ];
+  }
+
+  // 🔸 Callback desde PerfilPage
+  void _addRolePage(String role) {
+    setState(() {
+      if (role == "publicar") {
+        _pages.insert(3, PublicarPage());
+        _navItems = [
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+          const BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa"),
+          const BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
+          const BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Publicar"),
+          const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+        ];
+      } else if (role == "entregas") {
+        _pages.insert(3, EntregasPage());
+        _navItems = [
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+          const BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa"),
+          const BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
+          const BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: "Entregas"),
+          const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+        ];
+      }
+    });
   }
 
   @override
@@ -78,12 +123,15 @@ class _HomePageState extends State<HomePage> {
                   ? "Mapa"
                   : _selectedIndex == 2
                       ? "Mis Favoritos"
-                      : "Perfil",
+                      : _selectedIndex == 3 && _navItems[3].label == "Publicar"
+                          ? "Publicar"
+                          : _selectedIndex == 3 && _navItems[3].label == "Entregas"
+                              ? "Entregas"
+                              : "Perfil",
         ),
       ),
       body: _pages[_selectedIndex],
 
-      // ---------------- BOTTOM NAVIGATION ----------------
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepOrange,
@@ -93,24 +141,7 @@ class _HomePageState extends State<HomePage> {
             _selectedIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Inicio",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: "Mapa",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: "Favoritos",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Perfil",
-          ),
-        ],
+        items: _navItems,
       ),
     );
   }
@@ -122,7 +153,6 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Barra de búsqueda
           TextField(
             decoration: InputDecoration(
               hintText: "Buscar alimentos...",
@@ -136,7 +166,6 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 20),
 
-          // Categorías
           GridView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
@@ -162,12 +191,10 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 30),
 
-          // Recomendaciones en vertical
           Text("Recomendaciones",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 15),
 
-          // 🔹 Usamos Column en lugar de ListView
           Column(
             children: foods.map((food) {
               return _foodCard(
@@ -184,7 +211,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   // Tarjeta de comida
   Widget _foodCard(String title, String description, String imagePath,
       double rating, int reviews, double price) {
