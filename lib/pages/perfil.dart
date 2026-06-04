@@ -17,14 +17,65 @@ class _PerfilPageState extends State<PerfilPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Formulario para $role"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(decoration: InputDecoration(labelText: "Nombre completo")),
-              TextField(decoration: InputDecoration(labelText: "Teléfono")),
-              TextField(decoration: InputDecoration(labelText: "Dirección")),
-            ],
+          title: Text(role == "publicar" ? "Currículum de vendedor" : "Formulario de repartidor"),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (role == "publicar") ...[
+                  TextField(decoration: InputDecoration(labelText: "Nombre del negocio *")),
+                  SizedBox(height: 12),
+                  TextField(decoration: InputDecoration(labelText: "Tipo de negocio *")),
+                  SizedBox(height: 12),
+                  TextField(decoration: InputDecoration(labelText: "Dirección del negocio *")),
+                  SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(labelText: "Teléfono de contacto"),
+                    keyboardType: TextInputType.number, // ✅ solo números
+                  ),
+                  SizedBox(height: 12),
+                  TextField(decoration: InputDecoration(labelText: "Email del negocio")),
+                  SizedBox(height: 12),
+                  TextField(decoration: InputDecoration(labelText: "Descripción del negocio")),
+                  SizedBox(height: 12),
+                  TextField(decoration: InputDecoration(labelText: "Años de experiencia en el sector")),
+                  SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(labelText: "Número de licencia comercial *"),
+                    keyboardType: TextInputType.number, // ✅ solo números
+                  ),
+                  SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(labelText: "Horario de atención"),
+                    items: [
+                      "Lun-Vie 9:00–18:00",
+                      "Lun-Sab 10:00–20:00",
+                      "Lun-Dom 10:00–23:00",
+                    ].map((h) => DropdownMenuItem(value: h, child: Text(h))).toList(),
+                    onChanged: (val) {},
+                  ),
+                ] else if (role == "entregas") ...[
+                  TextField(decoration: InputDecoration(labelText: "Tipo de vehículo *")),
+                  SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(labelText: "Número de licencia de conducir *"),
+                    keyboardType: TextInputType.number, // ✅ solo números
+                  ),
+                  SizedBox(height: 12),
+                  TextField(decoration: InputDecoration(labelText: "Experiencia como repartidor *")),
+                  SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(labelText: "Disponibilidad horaria *"),
+                    items: [
+                      "Lun-Vie 9:00–18:00",
+                      "Lun-Sab 10:00–20:00",
+                      "Lun-Dom 10:00–23:00",
+                    ].map((h) => DropdownMenuItem(value: h, child: Text(h))).toList(),
+                    onChanged: (val) {},
+                  ),
+                ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -33,7 +84,7 @@ class _PerfilPageState extends State<PerfilPage> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
-              child: Text("Confirmar", style: TextStyle(color: Colors.white)),
+              child: Text("Enviar solicitud", style: TextStyle(color: Colors.white)),
               onPressed: () {
                 Navigator.pop(context);
                 widget.onRoleSelected(role); // 🔸 Avisamos al HomePage
@@ -47,7 +98,7 @@ class _PerfilPageState extends State<PerfilPage> {
 
   @override
   Widget build(BuildContext context) {
-    final usuario = widget.usuario; // ✅ Acceso al usuario recibido
+    final usuario = widget.usuario;
 
     return Scaffold(
       backgroundColor: Colors.orange.shade50,
@@ -73,10 +124,7 @@ class _PerfilPageState extends State<PerfilPage> {
                   ),
                   SizedBox(height: 10),
                   Text(usuario["nombre"],
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
                   Text(usuario["gmail"],
                       style: TextStyle(color: Colors.white70, fontSize: 14)),
                 ],
@@ -147,10 +195,7 @@ class _PerfilPageState extends State<PerfilPage> {
                   ),
                 ),
                 child: Text("Cerrar sesión",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
