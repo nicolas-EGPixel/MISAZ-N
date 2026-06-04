@@ -26,8 +26,12 @@ class EntregasPage extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
+  final Map<String, dynamic> usuario; // ✅ Recibe datos del usuario
+
+  HomePage({required this.usuario}); // ✅ Constructor
   @override
   _HomePageState createState() => _HomePageState();
+
 }
 
 class _HomePageState extends State<HomePage> {
@@ -81,7 +85,10 @@ class _HomePageState extends State<HomePage> {
       _inicioPage(),   // Inicio
       MapaPage(),      // Mapa
       FavoritosPage(), // Favoritos
-      PerfilPage(onRoleSelected: _addRolePage), // Perfil con callback
+      PerfilPage(
+        usuario: widget.usuario,          // ✅ pasa el usuario
+        onRoleSelected: _addRolePage,     // ✅ callback
+      ),
     ];
 
     _navItems = const [
@@ -292,4 +299,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-

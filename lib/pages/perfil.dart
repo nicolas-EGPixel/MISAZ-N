@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 
 class PerfilPage extends StatefulWidget {
-  final Function(String) onRoleSelected; 
-  // 🔸 Callback para avisar al HomePage que se eligió un rol
+  final Map<String, dynamic> usuario;        // ✅ Recibe el usuario
+  final Function(String) onRoleSelected;     // ✅ Callback para roles
 
-  PerfilPage({required this.onRoleSelected});
+  PerfilPage({required this.usuario, required this.onRoleSelected});
 
   @override
   _PerfilPageState createState() => _PerfilPageState();
@@ -21,15 +21,9 @@ class _PerfilPageState extends State<PerfilPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                decoration: InputDecoration(labelText: "Nombre completo"),
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: "Teléfono"),
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: "Dirección"),
-              ),
+              TextField(decoration: InputDecoration(labelText: "Nombre completo")),
+              TextField(decoration: InputDecoration(labelText: "Teléfono")),
+              TextField(decoration: InputDecoration(labelText: "Dirección")),
             ],
           ),
           actions: [
@@ -38,9 +32,7 @@ class _PerfilPageState extends State<PerfilPage> {
               onPressed: () => Navigator.pop(context),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
               child: Text("Confirmar", style: TextStyle(color: Colors.white)),
               onPressed: () {
                 Navigator.pop(context);
@@ -55,12 +47,14 @@ class _PerfilPageState extends State<PerfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final usuario = widget.usuario; // ✅ Acceso al usuario recibido
+
     return Scaffold(
       backgroundColor: Colors.orange.shade50,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 🔸 Encabezado
+            // 🔸 Encabezado con datos reales
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 40),
@@ -78,12 +72,12 @@ class _PerfilPageState extends State<PerfilPage> {
                     backgroundImage: AssetImage("assets/images/perfil.jpg"),
                   ),
                   SizedBox(height: 10),
-                  Text("Juan Pérez",
+                  Text(usuario["nombre"],
                       style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.white)),
-                  Text("juan.perez@email.com",
+                  Text(usuario["gmail"],
                       style: TextStyle(color: Colors.white70, fontSize: 14)),
                 ],
               ),
@@ -98,8 +92,7 @@ class _PerfilPageState extends State<PerfilPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Información personal",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
                   ListTile(
                     leading: Icon(Icons.edit, color: Colors.deepOrange),
@@ -119,8 +112,7 @@ class _PerfilPageState extends State<PerfilPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Opciones de cuenta",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   SizedBox(height: 10),
                   ListTile(
                     leading: Icon(Icons.store, color: Colors.deepOrange),

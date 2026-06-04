@@ -1,4 +1,4 @@
-name: flutter_application_1
+name: sazon
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0+1
@@ -7,6 +7,9 @@ environment:
   sdk: ^3.11.5
 
 dependencies:
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0
+  path: any
   google_maps_flutter: ^2.5.0
   flutter:
     sdk: flutter
