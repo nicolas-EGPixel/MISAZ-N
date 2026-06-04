@@ -60,20 +60,48 @@ class RegisterPage extends StatelessWidget {
                     child: Text("Registrarse",
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     onPressed: () async {
+                      String email = emailController.text.trim();
+                      
+                      RegExp emailRegExp = RegExp(
+                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+"
+                      );
+
+                      if (nameController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Por favor, ingresa tu nombre")),
+                        );
+                        return;
+                      }
+
+                      if (!emailRegExp.hasMatch(email)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Por favor, ingresa un correo válido con '@' y dominio")),
+                        );
+                        return;
+                      }
+
+                      if (passwordController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Por favor, ingresa una contraseña")),
+                        );
+                        return;
+                      }
+
+                      // Si los campos están correctos, procede a registrar en la BD local:
                       try {
                         await DBHelper.insertUsuario(
                           nameController.text,
-                          emailController.text,
+                          email,
                           passwordController.text,
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Usuario registrado correctamente")),
+                          const SnackBar(content: Text("Usuario registrado correctamente")),
                         );
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (_) => HomePage(usuario: {
                             "nombre": nameController.text,
-                            "gmail": emailController.text,
+                            "gmail": email,
                             "contraseña": passwordController.text,
                           })),
                         );
@@ -83,6 +111,27 @@ class RegisterPage extends StatelessWidget {
                         );
                       }
                     },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("¿Ya tienes cuenta? ", style: TextStyle(color: Colors.grey[700])),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context); // Quita esta pantalla y vuelve al login de forma limpia
+                        },
+                        child: const Text(
+                          "Inicia Sesión",
+                          style: TextStyle(
+                            color: Colors.deepOrange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
