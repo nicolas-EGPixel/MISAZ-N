@@ -58,12 +58,33 @@ class LoginPage extends StatelessWidget {
                     child: Text("Entrar",
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     onPressed: () async {
+                      String email = emailController.text.trim();
+                      
+                      // Expresión regular para validar formato de correo electrónico
+                      RegExp emailRegExp = RegExp(
+                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+"
+                      );
+
+                      if (email.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Por favor, ingresa tu correo")),
+                        );
+                        return; // Detiene la ejecución
+                      }
+
+                      if (!emailRegExp.hasMatch(email)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("El formato del correo no es válido (ejemplo@dominio.com)")),
+                        );
+                        return; // Detiene la ejecución si no tiene @ o formato correcto
+                      }
+
+                      // Si pasa las validaciones, continúa con la lógica que hizo tu compañero:
                       try {
-                        final usuario = await DBHelper.login(
-                          emailController.text,
+                        var usuario = await DBHelper.login(
+                          email,
                           passwordController.text,
                         );
-                        print("Resultado login: $usuario");
 
                         if (usuario != null) {
                           Navigator.pushReplacement(
@@ -72,7 +93,7 @@ class LoginPage extends StatelessWidget {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Correo o contraseña incorrectos")),
+                            const SnackBar(content: Text("Correo o contraseña incorrectos")),
                           );
                         }
                       } catch (e) {
