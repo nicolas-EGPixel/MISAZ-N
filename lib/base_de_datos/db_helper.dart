@@ -41,4 +41,14 @@ class DBHelper {
     );
     return res.isNotEmpty ? res.first : null;
   }
+
+
+  static Future<int> eliminarUsuario(String gmail) async {
+    final db = await initDB(); // Conecta usando el método de tu compañero
+    return await db.delete(
+      'tb_datos',          // Apunta a la tabla real de tu compañero
+      where: 'gmail = ?',  // Busca por la columna del correo
+      whereArgs: [gmail],
+    );
+  }
 }
