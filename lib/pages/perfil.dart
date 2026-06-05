@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
+import '../base_de_datos/db_helper.dart';
 
 class PerfilPage extends StatefulWidget {
   final Map<String, dynamic> usuario;        // ✅ Recibe el usuario
@@ -173,11 +174,79 @@ class _PerfilPageState extends State<PerfilPage> {
                     onTap: () => _showForm("entregas"),
                   ),
                   ListTile(
-                    leading: Icon(Icons.history, color: Colors.deepOrange),
-                    title: Text("Historial de compras"),
+                    leading: const Icon(Icons.history, color: Colors.deepOrange),
+                    title: const Text("Historial de compras"),
                     onTap: () {},
                   ),
-                ],
+
+                  const Divider(), // Una línea sutil separadora
+
+                  // 🔴 BOTÓN VISUAL PARA ELIMINAR CUENTA
+                  ListTile(
+                    leading: const Icon(Icons.delete_forever, color: Colors.red),
+                    title: const Text(
+                      "Eliminar mi cuenta",
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {
+                      // Cuadro de diálogo para confirmar y evitar accidentes
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text("¿Eliminar cuenta permanentemente?"),
+                            content: const Text(
+                              "Esta acción borrará por completo tus datos de Mi Sazón de forma irreversible. ¿Deseas continuar?"
+                            ),
+                            actions: [
+                              TextButton(
+                                child: const Text("Cancelar"),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                child: const Text("Eliminar", style: TextStyle(color: Colors.white)),
+                                onPressed: () async {
+                                  try {
+                                    // Extraemos el correo que tiene la sesión actual usando la clave 'gmail'
+                                    String emailAEliminar = widget.usuario['gmail'] ?? "";
+
+                                    if (emailAEliminar.isNotEmpty) {
+                                      // Llamamos a la función que acabamos de guardar
+                                      await DBHelper.eliminarUsuario(emailAEliminar);
+                                    }
+
+                                    // Cerramos el cuadro de diálogo
+                                    Navigator.pop(context);
+
+                                    // Mandamos al usuario de regreso a la pantalla de Login
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => LoginPage()),
+                                    );
+
+                                    // Notificación en pantalla
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Tu cuenta ha sido eliminada correctamente."),
+                                        backgroundColor: Colors.redAccent,
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("Error al eliminar cuenta: $e")),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ], // Cierre de las opciones del Card
               ),
             ),
 
