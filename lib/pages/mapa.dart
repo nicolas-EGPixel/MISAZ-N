@@ -8,22 +8,23 @@ class MapaPage extends StatefulWidget {
 }
 
 class _MapaPageState extends State<MapaPage> {
-  late GoogleMapController _mapController;
+  // Coordenadas céntricas de Zamora, Michoacán
+  final LatLng zamoraCenter = const LatLng(19.9845, -102.2865);
 
-  // Coordenadas de Zamora, Michoacán
-  final LatLng zamoraCenter = LatLng(19.9833, -102.2833);
-
-  // Lista de establecimientos cercanos (por ahora vacía)
-  final List<Map<String, dynamic>> establecimientos = [];
+  // Lista de establecimientos cercanos para tu app de comida
+  final List<Map<String, dynamic>> establecimientos = [
+    {"nombre": "Sabor de Hogar (Centro)", "direccion": "C. Cázares #45, Centro"},
+    {"nombre": "Antojitos Doña Mary", "direccion": "Av. Juárez Oriente #210"},
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Encabezado con buscador
+        // Encabezado con buscador de Sazón de Hogar
         Container(
           padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.deepOrange, Colors.orange],
               begin: Alignment.topLeft,
@@ -33,108 +34,114 @@ class _MapaPageState extends State<MapaPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Encuentra tu restaurante",
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white)),
-              SizedBox(height: 10),
+              const Text(
+                "Encuentra tu restaurante",
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              const SizedBox(height: 10),
               TextField(
                 decoration: InputDecoration(
-                  hintText: "Buscar establecimientos...",
-                  prefixIcon: Icon(Icons.search),
-                  filled: true,
-                  fillColor: Colors.white,
+                  hintText: "Buscar comida o negocios...",
+                  prefixIcon: const Icon(Icons.search, color: Colors.deepOrange),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
             ],
           ),
         ),
 
-        // Sección del mapa
+        // CONTENEDOR DEL MAPA GRATUITO (OpenStreetMap)
         Expanded(
           child: Stack(
             children: [
-              Container(
-                margin: EdgeInsets.all(12), // 🔸 Bordes alrededor del mapa
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+              FlutterMap(
+                options: MapOptions(
+                  initialCenter: zamoraCenter, // Centrado en Zamora
+                  initialZoom: 14.0, // Nivel de acercamiento ideal para la ciudad
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: zamoraCenter,
-                      zoom: 14,
-                    ),
-                    onMapCreated: (controller) {
-                      _mapController = controller;
-                    },
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false, // 🔸 Desactivamos el botón default
+                children: [
+                  // 1. CAPA DEL MAPA: Descarga los mosaicos gratuitos de OpenStreetMap
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.misazon.app', // Identificador de tu app
                   ),
-                ),
+                  
+                  // 2. CAPA DE MARCADORES: Los Pines en el mapa
+                  MarkerLayer(
+                    markers: [
+                      // Marcador en el centro de Zamora
+                      Marker(
+                        point: zamoraCenter,
+                        width: 40,
+                        height: 40,
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
 
-              // Botones flotantes sobre el mapa
+              // Botón flotante decorativo encima del mapa (Pantalla completa)
               Positioned(
-                bottom: 20,
-                right: 20,
-                child: Column(
-                  children: [
-                    FloatingActionButton(
-                      heroTag: "location",
-                      backgroundColor: Colors.deepOrange,
-                      child: Icon(Icons.my_location, color: Colors.white),
-                      onPressed: () {
-                        _mapController.animateCamera(
-                          CameraUpdate.newLatLng(zamoraCenter),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 12),
-                    FloatingActionButton(
-                      heroTag: "fullscreen",
-                      backgroundColor: Colors.orange,
-                      child: Icon(Icons.fullscreen, color: Colors.white),
-                      onPressed: () {
-                        // Aquí podrías abrir un modal con el mapa en pantalla completa
-                      },
-                    ),
-                  ],
+                bottom: 16,
+                right: 16,
+                child: FloatingActionButton(
+                  heroTag: "fullscreen_map",
+                  backgroundColor: Colors.deepOrange,
+                  child: const Icon(Icons.fullscreen, color: Colors.white),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Vista de mapa expandida")),
+                    );
+                  },
                 ),
               ),
             ],
           ),
         ),
 
-        // Establecimientos cercanos
+        // Sección inferior: Lista de establecimientos locales
         Container(
+          height: 180, // Limitamos la altura de la lista para que no tape el mapa
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Establecimientos cercanos",
-                  style: TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
-              establecimientos.isEmpty
-                  ? Text("No hay establecimientos registrados aún.",
-                      style: TextStyle(color: Colors.grey[600]))
-                  : Column(
-                      children: establecimientos.map((e) {
-                        return ListTile(
-                          leading: Icon(Icons.store, color: Colors.deepOrange),
-                          title: Text(e["nombre"]),
-                          subtitle: Text(e["direccion"]),
-                        );
-                      }).toList(),
-                    ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Establecimientos cercanos",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                establecimientos.isEmpty
+                    ? Text(
+                        "No hay establecimientos registrados aún.",
+                        style: TextStyle(color: Colors.grey[600]),
+                      )
+                    : Column(
+                        children: establecimientos.map((e) {
+                          return ListTile(
+                            leading: const Icon(Icons.store, color: Colors.deepOrange),
+                            title: Text(e["nombre"]),
+                            subtitle: Text(e["direccion"]),
+                            contentPadding: EdgeInsets.zero,
+                          );
+                        }).toList(),
+                      ),
+              ],
+            ),
           ),
         ),
       ],
