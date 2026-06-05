@@ -65,19 +65,28 @@ class _MapaPageState extends State<MapaPage> {
               FlutterMap(
                 options: MapOptions(
                   initialCenter: zamoraCenter, // Centrado en Zamora
-                  initialZoom: 14.0, // Nivel de acercamiento ideal para la ciudad
+                  initialZoom: 14.0,           // Acercamiento inicial
+                  minZoom: 12.0,               // 🔒 No permite alejarse más allá de ver la ciudad completa
+                  maxZoom: 18.0,               // 🔒 No permite acercarse al nivel de ver los baches de la calle
+                  
+                  // 🔒 RESTRICCIÓN DE CÁMARA (Límites geográficos para Zamora)
+                  cameraConstraint: CameraConstraint.contain(
+                    bounds: LatLngBounds(
+                      const LatLng(19.9500, -102.3400), // Esquina inferior izquierda (Suroeste de Zamora)
+                      const LatLng(20.0200, -102.2300), // Esquina superior derecha (Noreste de Zamora)
+                    ),
+                  ),
                 ),
                 children: [
-                  // 1. CAPA DEL MAPA: Descarga los mosaicos gratuitos de OpenStreetMap
+                  // 1. CAPA DEL MAPA
                   TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.misazon.app', // Identificador de tu app
+                    userAgentPackageName: 'com.misazon.app',
                   ),
                   
-                  // 2. CAPA DE MARCADORES: Los Pines en el mapa
+                  // 2. CAPA DE MARCADORES
                   MarkerLayer(
                     markers: [
-                      // Marcador en el centro de Zamora
                       Marker(
                         point: zamoraCenter,
                         width: 40,
