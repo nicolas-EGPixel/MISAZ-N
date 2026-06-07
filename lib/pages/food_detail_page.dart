@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class FoodDetailPage extends StatelessWidget {
   final String title;
@@ -7,6 +8,7 @@ class FoodDetailPage extends StatelessWidget {
   final double rating;
   final int reviews;
   final double price;
+  final String? categoria; // opcional
 
   FoodDetailPage({
     required this.title,
@@ -15,6 +17,7 @@ class FoodDetailPage extends StatelessWidget {
     required this.rating,
     required this.reviews,
     required this.price,
+    this.categoria,
   });
 
   @override
@@ -28,16 +31,36 @@ class FoodDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(imagePath,
-                height: 220, width: double.infinity, fit: BoxFit.cover),
+            // 🔹 Imagen segura (assets o archivo local)
+            imagePath.startsWith("assets")
+                ? Image.asset(
+                    imagePath,
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  )
+                : Image.file(
+                    File(imagePath),
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Image.asset("assets/images/default.webp",
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover),
+                  ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Descripción
                   Text(description,
                       style: TextStyle(fontSize: 16, color: Colors.grey[800])),
                   SizedBox(height: 10),
+
+                  // Rating y reseñas
                   Row(
                     children: [
                       Icon(Icons.star, color: Colors.amber),
@@ -47,12 +70,26 @@ class FoodDetailPage extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 10),
-                  Text("€$price",
+
+                  // Precio
+                  Text("\$$price",
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.deepOrange)),
+                  SizedBox(height: 10),
+
+                  // Categoría (si existe)
+                  if (categoria != null && categoria!.isNotEmpty)
+                    Text("Categoría: $categoria",
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[700])),
+
                   SizedBox(height: 20),
+
+                  // Botones de acción
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -76,6 +113,8 @@ class FoodDetailPage extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 30),
+
+                  // Reseñas
                   Text("Reseñas",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

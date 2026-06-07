@@ -7,10 +7,10 @@ import '../base_de_datos/db_helper.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
-// 🔸 PANTALLA DE PUBLICAR PLATILLOS (Rediseño Interactiva)
+// 🔸 PANTALLA DE PUBLICAR PLATILLOS
 class PublicarPage extends StatefulWidget {
-  final Map<String, dynamic> usuario; 
-  PublicarPage({required this.usuario}); 
+  final Map<String, dynamic> usuario;
+  PublicarPage({required this.usuario});
 
   @override
   _PublicarPageState createState() => _PublicarPageState();
@@ -30,7 +30,7 @@ class _PublicarPageState extends State<PublicarPage> {
   @override
   void initState() {
     super.initState();
-    _cargarMisPlatillos(); 
+    _cargarMisPlatillos();
   }
 
   Future<void> _cargarMisPlatillos() async {
@@ -54,250 +54,150 @@ class _PublicarPageState extends State<PublicarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Añadir nuevo plato al menú", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 15),
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Añadir nuevo plato al menú",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
 
-          const Text("Nombre del plato *", style: TextStyle(fontSize: 14)),
-          const SizedBox(height: 5),
-          TextField(
-            controller: nombreController,
-            decoration: InputDecoration(
-              hintText: "Ej: Pizza Margarita (Centro)",
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+            TextField(
+              controller: nombreController,
+              decoration: InputDecoration(
+                labelText: "Nombre del plato *",
+                hintText: "Ej: Pizza Margarita (Centro)",
+              ),
             ),
-          ),
-          const SizedBox(height: 15),
+            SizedBox(height: 15),
 
-          const Text("Descripción", style: TextStyle(fontSize: 14)),
-          const SizedBox(height: 5),
-          TextField(
-            controller: descripcionController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: "Describe tu plato...",
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+            TextField(
+              controller: descripcionController,
+              decoration: InputDecoration(
+                labelText: "Descripción",
+                hintText: "Describe tu plato...",
+              ),
+              maxLines: 3,
             ),
-          ),
-          const SizedBox(height: 15),
+            SizedBox(height: 15),
 
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Precio (Pesos) *", style: TextStyle(fontSize: 14)),
-                    const SizedBox(height: 5),
-                    TextField(
-                      controller: precioController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: "\$12.99",
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                      ),
-                    ),
-                  ],
-                ),
+            TextField(
+              controller: precioController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: "Precio (Pesos) *",
+                hintText: "\$12.99",
               ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Categoría", style: TextStyle(fontSize: 14)),
-                    const SizedBox(height: 5),
-                    TextField(
-                      controller: categoriaController,
-                      decoration: InputDecoration(
-                        hintText: "Pizzas, Pasta...",
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
+            ),
+            SizedBox(height: 15),
 
-          const Text("Imagen del plato", style: TextStyle(fontSize: 14)),
-          const SizedBox(height: 5),
-          GestureDetector(
-            onTap: _seleccionarImagen, 
-            child: Container(
-              width: double.infinity,
-              height: 140, 
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade400),
-                image: _imagenSeleccionada != null
-                    ? DecorationImage(
-                        image: FileImage(_imagenSeleccionada!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+            TextField(
+              controller: categoriaController,
+              decoration: InputDecoration(
+                labelText: "Categoría",
+                hintText: "Pizzas, Pasta...",
               ),
-              child: _imagenSeleccionada == null
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.add_a_photo, size: 40, color: Colors.deepOrange),
-                        SizedBox(height: 8),
-                        Text("Click para subir imagen", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                        Text("JPG, PNG o WEBP", style: TextStyle(color: Colors.grey, fontSize: 10)),
-                      ],
-                    )
-                  : Align(
-                      alignment: Alignment.topRight,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black54,
-                          child: Icon(Icons.edit, color: Colors.white, size: 18),
+            ),
+            SizedBox(height: 20),
+
+            Text("Imagen del plato",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+
+            GestureDetector(
+              onTap: _seleccionarImagen,
+              child: Container(
+                height: 150,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: _imagenSeleccionada == null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_a_photo,
+                                size: 40, color: Colors.deepOrange),
+                            SizedBox(height: 8),
+                            Text("Click para subir imagen JPG, PNG o WEBP"),
+                          ],
                         ),
-                      ),
-                    ),
+                      )
+                    : Image.file(_imagenSeleccionada!, fit: BoxFit.cover),
+              ),
             ),
-          ),
-          const SizedBox(height: 25),
+            SizedBox(height: 25),
 
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton.icon(
+            ElevatedButton.icon(
               onPressed: () async {
-                if (nombreController.text.isNotEmpty && precioController.text.isNotEmpty) {
-                  try {
-                    double precio = double.parse(precioController.text);
-                    String rutaImagenGuardar = _imagenSeleccionada?.path ?? "assets/images/default.webp";
-
-                    await DBHelper.insertarPlatillo(
-                      widget.usuario['gmail'] ?? "", 
-                      nombreController.text,
-                      descripcionController.text,
-                      precio,
-                      rutaImagenGuardar, 
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Platillo añadido exitosamente al menú."), backgroundColor: Colors.green));
-                    
-                    nombreController.clear();
-                    descripcionController.clear();
-                    precioController.clear();
-                    categoriaController.clear();
-                    setState(() {
-                      _imagenSeleccionada = null; 
-                    });
-                    _cargarMisPlatillos();
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error: Verifica que el precio sea un número válido (\$12.99)")));
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("El nombre y el precio son obligatorios.")));
+                if (nombreController.text.isNotEmpty &&
+                    precioController.text.isNotEmpty) {
+                  double precio = double.parse(precioController.text);
+                  await DBHelper.insertarPlatillo(
+                    widget.usuario['gmail'] ?? "",
+                    nombreController.text,
+                    descripcionController.text,
+                    precio,
+                    _imagenSeleccionada?.path ?? "assets/images/default.webp",
+                    categoriaController.text,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Platillo publicado ✅")),
+                  );
+                  _cargarMisPlatillos();
                 }
               },
-              icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
-              label: const Text("Añadir al menú", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              icon: Icon(Icons.shopping_cart),
+              label: Text("Añadir al menú"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrange,
-                elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                minimumSize: Size(double.infinity, 50),
               ),
             ),
-          ),
-          
-          const SizedBox(height: 30),
-          const Text("Menú actual", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
+            SizedBox(height: 30),
 
-          _misPlatillos.isEmpty
-              ? Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
-                  child: const Center(child: Text("Aún no tienes platillos publicados.")),
-                )
-              : ListView.builder(
-                  shrinkWrap: true, 
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _misPlatillos.length,
-                  itemBuilder: (context, index) {
-                    final platillo = _misPlatillos[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ListTile(
-                        leading: platillo['imagen'] != null && platillo['imagen'].toString().startsWith('assets')
-                            ? Image.asset(platillo['imagen'], width: 50, height: 50, fit: BoxFit.cover)
-                            : Image.file(File(platillo['imagen']), width: 50, height: 50, fit: BoxFit.cover, 
-                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.fastfood)),
-                        title: Text(platillo['nombre_platillo'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text("\$${platillo['precio']} - ${platillo['descripcion']}", maxLines: 1, overflow: TextOverflow.ellipsis),
-                        trailing: const Icon(Icons.check_circle, color: Colors.green), 
-                      ),
-                    );
-                  },
-                ),
-        ],
+            Text("Menú actual",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Divider(),
+            _misPlatillos.isEmpty
+                ? Text("No has publicado platillos aún.")
+                : Column(
+                    children: _misPlatillos.map((p) {
+                      return ListTile(
+                        leading: p["imagen"].toString().startsWith("assets")
+                            ? Image.asset(p["imagen"], width: 50, height: 50)
+                            : Image.file(File(p["imagen"]),
+                                width: 50, height: 50,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(Icons.fastfood)),
+                        title: Text(p["nombre_platillo"]),
+                        subtitle: Text("${p["descripcion"]}\n\$${p["precio"]}"),
+                        trailing: Icon(Icons.check, color: Colors.green),
+                      );
+                    }).toList(),
+                  ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class EntregasPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text("Aquí podrás gestionar tus entregas 🚚",
-          style: TextStyle(fontSize: 18)),
-    );
-  }
-}
-
+// 🔸 HOME PAGE
 class HomePage extends StatefulWidget {
-  final Map<String, dynamic> usuario; 
-
-  HomePage({required this.usuario}); 
+  final Map<String, dynamic> usuario;
+  HomePage({required this.usuario});
   @override
   _HomePageState createState() => _HomePageState();
-
 }
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-
-  bool _esVendedor = false; 
-
-  @override
-  void initState() {
-    super.initState();
-    _verificarRolVendedor();
-  }
-
-  void _verificarRolVendedor() async {
-    bool vendedor = await DBHelper.esVendedor(widget.usuario['gmail'] ?? "");
-    setState(() {
-      if (!_esVendedor && vendedor) {
-        if (_selectedIndex == 3) {
-          _selectedIndex = 4; 
-        }
-      }
-      _esVendedor = vendedor;
-    });
-  }
+  bool _esVendedor = false;
+  List<Map<String, dynamic>> platillos = [];
 
   final List<Map<String, dynamic>> categories = [
     {"icon": Icons.local_pizza, "label": "Pizzas"},
@@ -310,39 +210,33 @@ class _HomePageState extends State<HomePage> {
     {"icon": Icons.local_drink, "label": "Bebidas"},
   ];
 
-  final List<Map<String, dynamic>> foods = [
-    {
-      "title": "Pizza Margarita",
-      "description": "Pizza clásica con tomate, mozzarella y albahaca fresca.",
-      "image": "assets/images/pizza.webp",
-      "rating": 4.5,
-      "reviews": 128,
-      "price": 12.99,
-    },
-    {
-      "title": "Hamburguesa BBQ",
-      "description": "Carne angus, cheddar, bacon y salsa BBQ.",
-      "image": "assets/images/burger.webp",
-      "rating": 4.7,
-      "reviews": 89,
-      "price": 10.50,
-    },
-    {
-      "title": "Tacos Variado",
-      "description": "Selección de 24 piezas premium.",
-      "image": "assets/images/tacos.webp",
-      "rating": 4.8,
-      "reviews": 256,
-      "price": 24.99,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _verificarRolVendedor();
+    _cargarPlatillos();
+  }
+
+  void _verificarRolVendedor() async {
+    bool vendedor = await DBHelper.esVendedor(widget.usuario['gmail'] ?? "");
+    setState(() {
+      _esVendedor = vendedor;
+    });
+  }
+
+  void _cargarPlatillos() async {
+    final data = await DBHelper.getPlatillos();
+    setState(() {
+      platillos = data;
+    });
+  }
 
   List<Widget> _obtenerPaginas() {
     return [
-      _inicioPage(),                  
-      MapaPage(),                     
-      if (_esVendedor) PublicarPage(usuario: widget.usuario),     
-      FavoritosPage(),                
+      _inicioPage(),
+      MapaPage(),
+      if (_esVendedor) PublicarPage(usuario: widget.usuario),
+      FavoritosPage(),
       PerfilPage(
         usuario: widget.usuario,
         onRoleSelected: (String role) {
@@ -365,14 +259,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final navItems = _obtenerItems(); 
+    final navItems = _obtenerItems();
 
     return Scaffold(
       backgroundColor: Colors.orange.shade50,
       appBar: AppBar(
         backgroundColor: Colors.deepOrange,
-        elevation: 0,
-        automaticallyImplyLeading: false,
         title: Text(navItems[_selectedIndex].label ?? "Mi Sazón"),
       ),
       body: _obtenerPaginas()[_selectedIndex],
@@ -390,12 +282,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _inicioPage() {
+    Widget _inicioPage() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🔎 Buscador
           TextField(
             decoration: InputDecoration(
               hintText: "Buscar alimentos...",
@@ -409,6 +302,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 20),
 
+          // 📂 Categorías
           GridView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
@@ -434,27 +328,32 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 30),
 
+          // ⭐ Recomendaciones
           Text("Recomendaciones",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 15),
 
-          Column(
-            children: foods.map((food) {
-              return _foodCard(
-                food["title"],
-                food["description"],
-                food["image"],
-                food["rating"],
-                food["reviews"],
-                food["price"],
-              );
-            }).toList(),
-          ),
+          platillos.isEmpty
+              ? Text("No hay platillos publicados aún.")
+              : Column(
+                  children: platillos.map((p) {
+                    return _foodCard(
+                      p["nombre_platillo"],
+                      p["descripcion"],
+                      p["imagen"],
+                      4.5, // rating fijo
+                      128, // reviews fijos
+                      p["precio"] is int
+                          ? (p["precio"] as int).toDouble()
+                          : p["precio"],
+                    );
+                  }).toList(),
+                ),
         ],
       ),
     );
   }
-  
+
   Widget _foodCard(String title, String description, String imagePath,
       double rating, int reviews, double price) {
     return GestureDetector(
@@ -485,8 +384,15 @@ class _HomePageState extends State<HomePage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.asset(imagePath,
-                  height: 160, width: double.infinity, fit: BoxFit.cover),
+              child: imagePath.toString().startsWith("assets")
+                  ? Image.asset(imagePath,
+                      height: 160, width: double.infinity, fit: BoxFit.cover)
+                  : Image.file(File(imagePath),
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Image.asset("assets/images/default.webp")),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),

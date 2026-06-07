@@ -3,7 +3,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DBHelper {
   static Future<Database> initDB() async {
-    // 🔹 RECUPERAMOS LA CONFIGURACIÓN DE WINDOWS DE TU COMPAÑERO
+    // Inicialización para Windows/Linux
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
 
@@ -15,7 +15,7 @@ class DBHelper {
       options: OpenDatabaseOptions(
         version: 1,
         onCreate: (db, version) async {
-          // Tablas de usuarios
+          // Tabla de usuarios
           await db.execute('''
             CREATE TABLE tb_datos (
               nombre TEXT,
@@ -24,7 +24,7 @@ class DBHelper {
             )
           ''');
 
-          // Nueva tabla para los datos del negocio del vendedor
+          // Tabla de negocios (vendedores)
           await db.execute('''
             CREATE TABLE tb_negocios (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +36,7 @@ class DBHelper {
             )
           ''');
 
-          // Nueva tabla para almacenar los platillos publicados
+          // Tabla de platillos publicados
           await db.execute('''
             CREATE TABLE tb_platillos (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,7 +104,7 @@ class DBHelper {
   }
 
   // --- MÉTODOS DE PLATILLOS ---
-  static Future<int> insertarPlatillo(String gmail, String nombre, String descripcion, double precio, String imagen) async {
+  static Future<int> insertarPlatillo(String gmail, String nombre, String descripcion, double precio, String imagen, String categoria) async {
     final db = await initDB();
     return await db.insert("tb_platillos", {
       "gmail_usuario": gmail,
@@ -115,13 +115,45 @@ class DBHelper {
     });
   }
 
-  // --- MÉTODOS PARA LEER PLATILLOS ---
+  // Platillos de un usuario específico
   static Future<List<Map<String, dynamic>>> obtenerPlatillosPorUsuario(String gmail) async {
     final db = await initDB();
     return await db.query(
       "tb_platillos",
       where: "gmail_usuario = ?",
       whereArgs: [gmail],
+    );
+  }
+
+  // Obtener todos los platillos publicados
+  static Future<List<Map<String, dynamic>>> getPlatillos() async {
+    final db = await initDB();
+    return await db.query("tb_platillos");
+  }
+
+  // Eliminar un platillo
+  static Future<int> eliminarPlatillo(int id) async {
+    final db = await initDB();
+    return await db.delete(
+      "tb_platillos",
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
+
+  // Actualizar un platillo
+  static Future<int> actualizarPlatillo(int id, String nombre, String descripcion, double precio, String imagen, String categoria) async {
+    final db = await initDB();
+    return await db.update(
+      "tb_platillos",
+      {
+        "nombre_platillo": nombre,
+        "descripcion": descripcion,
+        "precio": precio,
+        "imagen": imagen,
+      },
+      where: "id = ?",
+      whereArgs: [id],
     );
   }
 }
