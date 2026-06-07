@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
-// Importa otras páginas aquí
 
 // ✅ Importa sqflite_common_ffi
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
