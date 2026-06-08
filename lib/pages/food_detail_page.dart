@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'compras.dart'; // Importa la página de compras para navegar desde el botón "Comprar ahora"
 
 class FoodDetailPage extends StatelessWidget {
   final String title;
@@ -94,22 +95,24 @@ class FoodDetailPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () {
-                          // Acción de compra
-                        },
-                        icon: Icon(Icons.shopping_cart),
-                        label: Text("Comprar ahora"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepOrange,
+                       onPressed: () {
+                        Navigator.push(
+                         context,
+                          MaterialPageRoute(
+                           builder: (context) => PurchaseFormPage(
+                            platillo: title,
+                            precio: price,
+                            imagePath: imagePath, // 👈 viene de la BD
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.favorite_border,
-                            color: Colors.deepOrange),
-                        onPressed: () {
-                          // Acción de favoritos
-                        },
-                      ),
+                      );
+                    },
+                    icon: Icon(Icons.shopping_cart),
+                    label: Text("Comprar ahora"),
+                    style: ElevatedButton.styleFrom(
+                     backgroundColor: Colors.deepOrange,
+                    ),
+                  ),
                     ],
                   ),
                   SizedBox(height: 30),

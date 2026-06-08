@@ -48,6 +48,43 @@ class DBHelper {
               imagen TEXT
             )
           ''');
+          // Tabla de repartidores
+          await db.execute('''
+            CREATE TABLE tb_repartidor (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              gmail_usuario TEXT,
+              num_licencia TEXT,
+              ordenes INTEGER,
+              completadas INTEGER
+            )
+          ''');
+          // Tabla de pedidos
+          await db.execute('''
+            CREATE TABLE tb_pedidos (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              nombre_platillo TEXT,
+              cantidad INTEGER,
+              direccion TEXT,
+              telefono TEXT,
+              notas TEXT,
+              subtotal REAL,
+              envio REAL,
+              total REAL
+            )
+          ''');
+        },
+        onUpgrade: (db, oldVersion, newVersion) async {
+          if (oldVersion < 2) {
+            await db.execute('''
+              CREATE TABLE IF NOT EXISTS tb_repartidor (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                gmail_usuario TEXT,
+                num_licencia TEXT,
+                ordenes INTEGER,
+                completadas INTEGER
+              )
+            ''');
+          }
         },
       ),
     );
@@ -167,4 +204,74 @@ class DBHelper {
       whereArgs: [gmail],
     );
   }
+
+  // --- MÉTODOS DE REPARTIDOR ---
+  static Future<int> registrarRepartidor(
+      String gmail, String licencia, int ordenes, int completadas) async {
+    final db = await initDB();
+    return await db.insert("tb_repartidor", {
+      "gmail_usuario": gmail,
+      "num_licencia": licencia,
+      "ordenes": ordenes,
+      "completadas": completadas,
+    });
+  }
+
+  static Future<List<Map<String, dynamic>>> obtenerRepartidores() async {
+    final db = await initDB();
+    return await db.query("tb_repartidor");
+  }
+
+  static Future<Map<String, dynamic>?> obtenerRepartidorPorUsuario(
+      String gmail) async {
+    final db = await initDB();
+    final res = await db.query(
+      "tb_repartidor",
+      where: "gmail_usuario = ?",
+      whereArgs: [gmail],
+    );
+    return res.isNotEmpty ? res.first : null;
+  }
+
+  static Future<int> actualizarRepartidor(
+      int id, int ordenes, int completadas) async {
+    final db = await initDB();
+    return await db.update(
+      "tb_repartidor",
+      {
+        "ordenes": ordenes,
+        "completadas": completadas,
+      },
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
+  // --- MÉTODOS DE PEDIDOS ---
+static Future<int> registrarPedido(
+    String platillo,
+    int cantidad,
+    String direccion,
+    String telefono,
+    String notas,
+    double subtotal,
+    double envio,
+    double total) async {
+  final db = await initDB();
+  return await db.insert("tb_pedidos", {
+    "nombre_platillo": platillo,
+    "cantidad": cantidad,
+    "direccion": direccion,
+    "telefono": telefono,
+    "notas": notas,
+    "subtotal": subtotal,
+    "envio": envio,
+    "total": total,
+  });
+}
+
+static Future<List<Map<String, dynamic>>> obtenerPedidos() async {
+  final db = await initDB();
+  return await db.query("tb_pedidos");
+}
+
 }
