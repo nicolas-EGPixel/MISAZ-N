@@ -20,7 +20,8 @@ class DBHelper {
             CREATE TABLE tb_datos (
               nombre TEXT,
               gmail TEXT,
-              contraseña TEXT
+              contraseña TEXT,
+              foto_perfil TEXT
             )
           ''');
 
@@ -154,6 +155,16 @@ class DBHelper {
       },
       where: "id = ?",
       whereArgs: [id],
+    );
+  }
+
+  static Future<int> actualizarFotoPerfil(String gmail, String rutaImagen) async {
+    final db = await initDB();
+    return await db.update(
+      'tb_datos',
+      {'foto_perfil': rutaImagen},
+      where: 'gmail = ?',
+      whereArgs: [gmail],
     );
   }
 }
