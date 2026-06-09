@@ -3,6 +3,7 @@ import 'mapa.dart';
 import 'favoritos.dart';
 import 'perfil.dart';
 import 'food_detail_page.dart';
+import 'entregas.dart';
 import '../base_de_datos/db_helper.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -197,6 +198,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool _esVendedor = false;
+  bool _esRepartidor = false;
   List<Map<String, dynamic>> platillos = [];
 
   final List<Map<String, dynamic>> categories = [
@@ -214,6 +216,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _verificarRolVendedor();
+    _verificarRolRepartidor();
     _cargarPlatillos();
   }
 
@@ -223,6 +226,13 @@ class _HomePageState extends State<HomePage> {
       _esVendedor = vendedor;
     });
   }
+
+  void _verificarRolRepartidor() async {
+  final repartidor = await DBHelper.obtenerRepartidorPorUsuario(widget.usuario['gmail'] ?? "");
+  setState(() {
+    _esRepartidor = repartidor != null; // true si existe registro en tb_repartidor
+  });
+}
 
   void _cargarPlatillos() async {
     final data = await DBHelper.getPlatillos();
@@ -236,26 +246,31 @@ class _HomePageState extends State<HomePage> {
       _inicioPage(),
       MapaPage(),
       if (_esVendedor) PublicarPage(usuario: widget.usuario),
+      if (_esRepartidor) EntregasPage(usuario: widget.usuario), // 👈 nueva
       FavoritosPage(),
       PerfilPage(
         usuario: widget.usuario,
         onRoleSelected: (String role) {
           _verificarRolVendedor();
+          _verificarRolRepartidor(); // 👈 actualizar también repartidor
         },
       ),
     ];
   }
 
   List<BottomNavigationBarItem> _obtenerItems() {
-    return [
-      const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
-      const BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa"),
-      if (_esVendedor)
-        const BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Publicar"),
-      const BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
-      const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
-    ];
-  }
+  return [
+    const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+    const BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa"),
+    if (_esVendedor)
+      const BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Publicar"),
+    if (_esRepartidor)
+      const BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: "Entregas"), // 👈 nueva
+    const BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
+    const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+  ];
+}
+
 
   @override
   Widget build(BuildContext context) {

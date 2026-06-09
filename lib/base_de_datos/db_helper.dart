@@ -72,6 +72,17 @@ class DBHelper {
               total REAL
             )
           ''');
+          // Tabla de completados
+          await db.execute('''
+            CREATE TABLE tb_completados (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              nombre_platillo TEXT,
+              cantidad INTEGER,
+              direccion TEXT,
+              envio REAL
+            )
+          ''');
+
         },
         onUpgrade: (db, oldVersion, newVersion) async {
           if (oldVersion < 2) {
@@ -273,5 +284,33 @@ static Future<List<Map<String, dynamic>>> obtenerPedidos() async {
   final db = await initDB();
   return await db.query("tb_pedidos");
 }
+
+// Insertar en completados
+static Future<int> registrarCompletado(
+    String platillo,
+    int cantidad,
+    String direccion,
+    double envio) async {
+  final db = await initDB();
+  return await db.insert("tb_completados", {
+    "nombre_platillo": platillo,
+    "cantidad": cantidad,
+    "direccion": direccion,
+    "envio": envio,
+  });
+}
+
+// Obtener completados
+static Future<List<Map<String, dynamic>>> obtenerCompletados() async {
+  final db = await initDB();
+  return await db.query("tb_completados");
+}
+
+// Eliminar pedido de tb_pedidos
+static Future<int> eliminarPedido(int id) async {
+  final db = await initDB();
+  return await db.delete("tb_pedidos", where: "id = ?", whereArgs: [id]);
+}
+
 
 }

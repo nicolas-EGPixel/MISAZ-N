@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'evaluacion_vendedor.dart';
+import 'evaluacion_repartidor.dart';
 import '../base_de_datos/db_helper.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -143,17 +144,25 @@ class _PerfilPageState extends State<PerfilPage> {
                   ),
                   const Divider(height: 1),
 
-                  // 3. Convertir en repartidor
+                  // 3. Convertirme en repartidor
                   ListTile(
                     leading: const Icon(Icons.delivery_dining, color: Colors.deepOrange),
-                    title: const Text("Convertir en repartidor"),
+                    title: const Text("Convertirme en repartidor"),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      // Acción futura para repartidor
+                      Navigator.push(
+                       context,
+                        MaterialPageRoute(
+                         builder: (context) => EvaluacionRepartidorPage(
+                          usuario: widget.usuario,
+                           onRoleSelected: widget.onRoleSelected,
+                         ),
+                        ),
+                      );
                     },
                   ),
                   
-                  // 🔸 Pequeñito separador visual
+                  // Pequeñito separador visual
                   Container(
                     height: 10,
                     color: Colors.grey.shade100,
