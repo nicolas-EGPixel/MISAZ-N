@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart'; // Librería del maestro
-import 'package:latlong2/latlong.dart'; // Librería para manejar coordenadas
-import '../base_de_datos/db_helper.dart'; // Para obtener negocios desde la base de datos
-import 'negocio_tarjeta.dart'; // Tarjeta personalizada para mostrar negocios
+import 'package:flutter_map/flutter_map.dart'; 
+import 'package:latlong2/latlong.dart'; 
+import '../base_de_datos/db_helper.dart'; 
+import 'negocio_tarjeta.dart'; 
 
 class MapaPage extends StatefulWidget {
   @override
@@ -10,20 +10,32 @@ class MapaPage extends StatefulWidget {
 }
 
 class _MapaPageState extends State<MapaPage> {
-  // Coordenadas céntricas de Zamora, Michoacán
   final LatLng zamoraCenter = const LatLng(19.9845, -102.2865);
 
-  // Lista de establecimientos cercanos para tu app de comida
-  final List<Map<String, dynamic>> establecimientos = [
-    {"nombre": "Sabor de Hogar (Centro)", "direccion": "C. Cázares #45, Centro"},
-    {"nombre": "Antojitos Doña Mary", "direccion": "Av. Juárez Oriente #210"},
-  ];
+  List<Map<String, dynamic>> _negocios = [];
+  String _query = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarNegocios();
+  }
+
+  Future<void> _cargarNegocios([String consulta = ""]) async {
+    final negocios = consulta.isEmpty
+        ? await DBHelper.obtenerNegocios()
+        : await DBHelper.buscarNegocios(consulta);
+
+    setState(() {
+      _negocios = negocios;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Encabezado con buscador de Sazón de Hogar
+        // 🔹 Encabezado con buscador
         Container(
           padding: const EdgeInsets.all(16.0),
           decoration: const BoxDecoration(
@@ -45,6 +57,10 @@ class _MapaPageState extends State<MapaPage> {
               ),
               const SizedBox(height: 10),
               TextField(
+                onChanged: (value) {
+                  _query = value;
+                  _cargarNegocios(_query);
+                },
                 decoration: InputDecoration(
                   hintText: "Buscar comida o negocios...",
                   prefixIcon: const Icon(Icons.search, color: Colors.deepOrange),
@@ -60,33 +76,28 @@ class _MapaPageState extends State<MapaPage> {
           ),
         ),
 
-        // CONTENEDOR DEL MAPA GRATUITO (OpenStreetMap)
+        // 🔹 Contenedor del mapa
         Expanded(
           child: Stack(
             children: [
               FlutterMap(
                 options: MapOptions(
-                  initialCenter: zamoraCenter, // Centrado en Zamora
-                  initialZoom: 14.0,           // Acercamiento inicial
-                  minZoom: 12.0,               // 🔒 No permite alejarse más allá de ver la ciudad completa
-                  maxZoom: 18.0,               // 🔒 No permite acercarse al nivel de ver los baches de la calle
-                  
-                  // 🔒 RESTRICCIÓN DE CÁMARA (Límites geográficos para Zamora)
+                  initialCenter: zamoraCenter,
+                  initialZoom: 14.0,
+                  minZoom: 12.0,
+                  maxZoom: 18.0,
                   cameraConstraint: CameraConstraint.contain(
                     bounds: LatLngBounds(
-                      const LatLng(19.9500, -102.3400), // Esquina inferior izquierda (Suroeste de Zamora)
-                      const LatLng(20.0200, -102.2300), // Esquina superior derecha (Noreste de Zamora)
+                      const LatLng(19.9500, -102.3400),
+                      const LatLng(20.0200, -102.2300),
                     ),
                   ),
                 ),
                 children: [
-                  // 1. CAPA DEL MAPA
                   TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.misazon.app',
                   ),
-                  
-                  // 2. CAPA DE MARCADORES
                   MarkerLayer(
                     markers: [
                       Marker(
@@ -104,7 +115,6 @@ class _MapaPageState extends State<MapaPage> {
                 ],
               ),
 
-              // Botón flotante decorativo encima del mapa (Pantalla completa)
               Positioned(
                 bottom: 16,
                 right: 16,
@@ -123,52 +133,40 @@ class _MapaPageState extends State<MapaPage> {
           ),
         ),
 
-        // Sección inferior: Lista de establecimientos locales
+        // 🔹 Sección inferior: Lista de negocios
         Container(
-  height: 220,
-  padding: const EdgeInsets.all(16.0),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        "Establecimientos cercanos",
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      const SizedBox(height: 10),
+          height: 220,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Establecimientos cercanos",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
 
-      Expanded(
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: DBHelper.obtenerNegocios(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Text("No hay establecimientos registrados aún.",
-                  style: TextStyle(color: Colors.grey[600]));
-            }
-
-            final negocios = snapshot.data!;
-            return ListView.builder(
-              itemCount: negocios.length,
-              itemBuilder: (context, index) {
-                final negocio = negocios[index];
-                return NegocioTarjeta(
-                  nombreNegocio: negocio['nombre_negocio'],
-                  tipoNegocio: negocio['tipo_negocio'],
-                  direccion: negocio['direccion'],
-                  telefono: negocio['telefono'],
-                  fotoNegocio: negocio['foto_negocio'] ?? "assets/images/default.webp",
-                );
-              },
-            );
-          },
+              Expanded(
+                child: _negocios.isEmpty
+                    ? Text("No hay establecimientos registrados aún.",
+                        style: TextStyle(color: Colors.grey[600]))
+                    : ListView.builder(
+                        itemCount: _negocios.length,
+                        itemBuilder: (context, index) {
+                          final negocio = _negocios[index];
+                          return NegocioTarjeta(
+                            nombreNegocio: negocio['nombre_negocio'],
+                            tipoNegocio: negocio['tipo_negocio'],
+                            direccion: negocio['direccion'],
+                            telefono: negocio['telefono'],
+                            fotoNegocio: negocio['foto_negocio'] ?? "assets/images/default.webp",
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
-      ),
-    ],
-  ),
-)
-
       ],
     );
   }
