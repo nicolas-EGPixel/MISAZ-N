@@ -256,7 +256,7 @@ class _HomePageState extends State<HomePage> {
   List<Widget> _obtenerPaginas() {
     return [
       _inicioPage(),
-      MapaPage(),
+      MapaPage(usuario: widget.usuario),
       if (_esVendedor) PublicarPage(usuario: widget.usuario),
       if (_esRepartidor) EntregasPage(usuario: widget.usuario), // 👈 nueva
       FavoritosPage(usuario: widget.usuario), // 👈 CORRECCIÓN APLICADA AQUÍ

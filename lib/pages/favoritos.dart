@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../base_de_datos/db_helper.dart';
 import 'food_detail_page.dart';
+import 'negocio_tarjeta.dart';
 import 'dart:io';
 
 class FavoritosPage extends StatefulWidget {
-  final Map<String, dynamic> usuario; // 🔸 Recibimos el usuario actual para filtrar sus favoritos
+  final Map<String, dynamic> usuario;
 
   FavoritosPage({required this.usuario});
 
@@ -15,6 +16,7 @@ class FavoritosPage extends StatefulWidget {
 class _FavoritosPageState extends State<FavoritosPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _comidasFavoritas = [];
+  List<Map<String, dynamic>> _negociosFavoritos = [];
   bool _cargando = true;
 
   @override
@@ -24,14 +26,15 @@ class _FavoritosPageState extends State<FavoritosPage> with SingleTickerProvider
     _cargarFavoritos();
   }
 
-  // Consulta la BD y recarga la lista de favoritos de comida del usuario
   Future<void> _cargarFavoritos() async {
     setState(() => _cargando = true);
     String email = widget.usuario['gmail'] ?? "";
     if (email.isNotEmpty) {
-      final favs = await DBHelper.obtenerPlatillosFavoritos(email);
+      final favComidas = await DBHelper.obtenerPlatillosFavoritos(email);
+      final favNegocios = await DBHelper.obtenerNegociosFavoritos(email);
       setState(() {
-        _comidasFavoritas = favs;
+        _comidasFavoritas = favComidas;
+        _negociosFavoritos = favNegocios;
         _cargando = false;
       });
     }
@@ -97,7 +100,6 @@ class _FavoritosPageState extends State<FavoritosPage> with SingleTickerProvider
                                 subtitle: Text("\$${platillo['precio']}", style: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w600)),
                                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                                 onTap: () async {
-                                  // Al regresar al listado de favoritos, volvemos a consultar la base de datos por si quitó el corazón dentro de los detalles
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -107,14 +109,14 @@ class _FavoritosPageState extends State<FavoritosPage> with SingleTickerProvider
                                         title: platillo['nombre_platillo'],
                                         description: platillo['descripcion'] ?? "",
                                         imagePath: imagen,
-                                        rating: 4.5, // Datos estáticos que manejas en detalle por ahora
+                                        rating: 4.5,
                                         reviews: 12,
                                         price: (platillo['precio'] as num).toDouble(),
                                         categoria: platillo['categoria'],
                                       ),
                                     ),
                                   );
-                                  _cargarFavoritos(); 
+                                  _cargarFavoritos();
                                 },
                               ),
                             );
@@ -122,7 +124,26 @@ class _FavoritosPageState extends State<FavoritosPage> with SingleTickerProvider
                         ),
 
               // --- PESTAÑA 2: NEGOCIOS ---
-              _emptyList("Aún no tienes negocios favoritos 🏪"),
+              _cargando
+                  ? const Center(child: CircularProgressIndicator(color: Colors.deepOrange))
+                  : _negociosFavoritos.isEmpty
+                      ? _emptyList("Aún no tienes negocios favoritos 🏪")
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(10),
+                          itemCount: _negociosFavoritos.length,
+                          itemBuilder: (context, index) {
+                            final negocio = _negociosFavoritos[index];
+                            return NegocioTarjeta(
+                              idNegocio: negocio['id'],
+                              nombreNegocio: negocio['nombre_negocio'],
+                              tipoNegocio: negocio['tipo_negocio'],
+                              direccion: negocio['direccion'],
+                              telefono: negocio['telefono'],
+                              fotoNegocio: negocio['foto_negocio'] ?? "assets/images/default.webp",
+                              gmailUsuario: widget.usuario['gmail'],
+                            );
+                          },
+                        ),
             ],
           ),
         ),

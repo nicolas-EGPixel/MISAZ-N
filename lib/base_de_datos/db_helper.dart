@@ -442,5 +442,16 @@ static Future<int> eliminarPedido(int id) async {
     );
   }
 
+  // --- MÉTODOS DE FAVORITOS DE NEGOCIOS ---
+  static Future<List<Map<String, dynamic>>> obtenerNegociosFavoritos(String gmail) async {
+    final db = await initDB();
+    return await db.rawQuery('''
+    SELECT n.* FROM tb_negocios n
+    INNER JOIN tb_favoritos f ON n.id = f.id_platillo
+    WHERE f.gmail_usuario = ?
+  ''', [gmail]);
+  }
+
+
 
 }

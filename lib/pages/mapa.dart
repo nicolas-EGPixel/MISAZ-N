@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart'; 
-import 'package:latlong2/latlong.dart'; 
-import '../base_de_datos/db_helper.dart'; 
-import 'negocio_tarjeta.dart'; 
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import '../base_de_datos/db_helper.dart';
+import 'negocio_tarjeta.dart';
 
 class MapaPage extends StatefulWidget {
+  final Map<String, dynamic> usuario; // 👈 para saber quién está logueado
+
+  const MapaPage({Key? key, required this.usuario}) : super(key: key);
+
   @override
   _MapaPageState createState() => _MapaPageState();
 }
@@ -155,11 +159,13 @@ class _MapaPageState extends State<MapaPage> {
                         itemBuilder: (context, index) {
                           final negocio = _negocios[index];
                           return NegocioTarjeta(
+                            idNegocio: negocio['id'],
                             nombreNegocio: negocio['nombre_negocio'],
                             tipoNegocio: negocio['tipo_negocio'],
                             direccion: negocio['direccion'],
                             telefono: negocio['telefono'],
                             fotoNegocio: negocio['foto_negocio'] ?? "assets/images/default.webp",
+                            gmailUsuario: widget.usuario['gmail'], // 👈 pasamos el usuario actual
                           );
                         },
                       ),
