@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart'; // Librería del maestro
 import 'package:latlong2/latlong.dart'; // Librería para manejar coordenadas
+import '../base_de_datos/db_helper.dart'; // Para obtener negocios desde la base de datos
+import 'negocio_tarjeta.dart'; // Tarjeta personalizada para mostrar negocios
 
 class MapaPage extends StatefulWidget {
   @override
@@ -123,36 +125,50 @@ class _MapaPageState extends State<MapaPage> {
 
         // Sección inferior: Lista de establecimientos locales
         Container(
-          height: 180, // Limitamos la altura de la lista para que no tape el mapa
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Establecimientos cercanos",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                establecimientos.isEmpty
-                    ? Text(
-                        "No hay establecimientos registrados aún.",
-                        style: TextStyle(color: Colors.grey[600]),
-                      )
-                    : Column(
-                        children: establecimientos.map((e) {
-                          return ListTile(
-                            leading: const Icon(Icons.store, color: Colors.deepOrange),
-                            title: Text(e["nombre"]),
-                            subtitle: Text(e["direccion"]),
-                            contentPadding: EdgeInsets.zero,
-                          );
-                        }).toList(),
-                      ),
-              ],
-            ),
-          ),
+  height: 220,
+  padding: const EdgeInsets.all(16.0),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Establecimientos cercanos",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 10),
+
+      Expanded(
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: DBHelper.obtenerNegocios(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Text("No hay establecimientos registrados aún.",
+                  style: TextStyle(color: Colors.grey[600]));
+            }
+
+            final negocios = snapshot.data!;
+            return ListView.builder(
+              itemCount: negocios.length,
+              itemBuilder: (context, index) {
+                final negocio = negocios[index];
+                return NegocioTarjeta(
+                  nombreNegocio: negocio['nombre_negocio'],
+                  tipoNegocio: negocio['tipo_negocio'],
+                  direccion: negocio['direccion'],
+                  telefono: negocio['telefono'],
+                  fotoNegocio: negocio['foto_negocio'] ?? "assets/images/default.webp",
+                );
+              },
+            );
+          },
         ),
+      ),
+    ],
+  ),
+)
+
       ],
     );
   }

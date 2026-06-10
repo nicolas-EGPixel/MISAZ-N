@@ -13,7 +13,7 @@ class DBHelper {
     return await databaseFactory.openDatabase(
       path,
       options: OpenDatabaseOptions(
-        version: 1,
+        version: 2, //Version mayor
         onCreate: (db, version) async {
           // Tabla de usuarios
           await db.execute('''
@@ -33,7 +33,8 @@ class DBHelper {
               nombre_negocio TEXT,
               tipo_negocio TEXT,
               direccion TEXT,
-              telefono TEXT
+              telefono TEXT,
+              foto_negocio TEXT
             )
           ''');
 
@@ -140,16 +141,24 @@ class DBHelper {
   }
 
   // --- MÉTODOS DE VENDEDOR / NEGOCIOS ---
-  static Future<int> registrarNegocio(String gmail, String nombre, String tipo, String direccion, String telefono) async {
-    final db = await initDB();
-    return await db.insert("tb_negocios", {
-      "gmail_usuario": gmail,
-      "nombre_negocio": nombre,
-      "tipo_negocio": tipo,
-      "direccion": direccion,
-      "telefono": telefono,
-    });
-  }
+  static Future<int> registrarNegocio(
+    String gmail,
+    String nombre,
+    String tipo,
+    String direccion,
+    String telefono,
+    String fotoNegocio) async {
+  final db = await initDB();
+  return await db.insert("tb_negocios", {
+    "gmail_usuario": gmail,
+    "nombre_negocio": nombre,
+    "tipo_negocio": tipo,
+    "direccion": direccion,
+    "telefono": telefono,
+    "foto_negocio": fotoNegocio, // 👈 guardamos la ruta de la foto
+  });
+}
+
 
   static Future<bool> esVendedor(String gmail) async {
     final db = await initDB();
@@ -416,4 +425,22 @@ static Future<int> eliminarPedido(int id) async {
       whereArgs: [gmail],
     );
   }
+
+  // --- MÉTODOS DE NEGOCIOS ---
+  static Future<List<Map<String, dynamic>>> obtenerNegocios() async {
+    final db = await initDB();
+    return await db.query("tb_negocios");
+  }
+
+  // --- MÉTODOS DE NEGOCIOS ---
+  static Future<List<Map<String, dynamic>>> buscarNegocios(String consulta) async {
+    final db = await initDB();
+    return await db.query(
+     "tb_negocios",
+     where: "nombre_negocio LIKE ?",
+     whereArgs: ['%$consulta%'],
+    );
+  }
+
+
 }
