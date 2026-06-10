@@ -5,6 +5,7 @@ import 'evaluacion_repartidor.dart';
 import '../base_de_datos/db_helper.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'historial_compras.dart';
 
 class PerfilPage extends StatefulWidget {
   final Map<String, dynamic> usuario;        
@@ -120,7 +121,12 @@ class _PerfilPageState extends State<PerfilPage> {
                     title: const Text("Historial de compras"),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      // Acción futura para el historial
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HistorialComprasPage(usuario: widget.usuario),
+                        ),
+                      );
                     },
                   ),
                   const Divider(height: 1),
@@ -162,11 +168,26 @@ class _PerfilPageState extends State<PerfilPage> {
                     },
                   ),
                   
-                  // Pequeñito separador visual
-                  Container(
-                    height: 10,
-                    color: Colors.grey.shade100,
+
+                  Container(height: 10, color: Colors.grey.shade100),
+
+                  // 🔸 NUEVO BOTÓN: Editar Perfil
+                  ListTile(
+                    leading: const Icon(Icons.edit, color: Colors.blue),
+                    title: const Text("Editar perfil"),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditProfilePage(usuario: widget.usuario),
+                        ),
+                      );
+                    },
                   ),
+
+                  // 🔸 SEPARADOR ABAJO (Cuenta)
+                  Container(height: 10, color: Colors.grey.shade100),
 
                   // 4. Cerrar sesión
                   ListTile(
@@ -234,6 +255,143 @@ class _PerfilPageState extends State<PerfilPage> {
           ),
           const SizedBox(height: 30),
         ],
+      ),
+    );
+  }
+}
+
+
+// 🔸 NUEVA PANTALLA PARA LA EDICIÓN DE PERFIL
+class EditProfilePage extends StatefulWidget {
+  final Map<String, dynamic> usuario;
+  EditProfilePage({required this.usuario});
+
+  @override
+  _EditProfilePageState createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends State<EditProfilePage> {
+  final _nombreController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passController = TextEditingController();
+  final _oldPassController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Cargamos los datos actuales en los campos
+    _nombreController.text = widget.usuario['nombre'] ?? "";
+    _emailController.text = widget.usuario['gmail'] ?? "";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.orange.shade50,
+      appBar: AppBar(
+        backgroundColor: Colors.deepOrange,
+        title: const Text("Editar Perfil", style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  "Modificar Datos",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: _nombreController,
+                  decoration: const InputDecoration(labelText: "Nuevo Nombre", prefixIcon: Icon(Icons.person)),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: "Nuevo Correo", prefixIcon: Icon(Icons.email)),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _passController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: "Nueva Contraseña (Opcional)", prefixIcon: Icon(Icons.lock_outline)),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15.0),
+                  child: Divider(color: Colors.grey),
+                ),
+                const Text(
+                  "Confirmar Cambios",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _oldPassController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Contraseña Actual (Requerida)",
+                    prefixIcon: Icon(Icons.lock, color: Colors.redAccent),
+                  ),
+                ),
+                const SizedBox(height: 25),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepOrange,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () async {
+                    if (_oldPassController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Debes ingresar tu contraseña actual para confirmar.")),
+                      );
+                      return;
+                    }
+
+                    // 1. Validamos la contraseña actual contra la base de datos
+                    bool esValida = await DBHelper.verificarContrasena(widget.usuario['gmail'], _oldPassController.text);
+                    
+                    if (esValida) {
+                      // Si no escribió una nueva contraseña, dejamos la que ya tiene
+                      String nuevaContrasena = _passController.text.isEmpty ? widget.usuario['contraseña'] : _passController.text;
+                      
+                      // 2. Guardamos los cambios en SQLite
+                      await DBHelper.actualizarUsuario(
+                        widget.usuario['gmail'], 
+                        _nombreController.text, 
+                        _emailController.text, 
+                        nuevaContrasena
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Datos actualizados. Por seguridad inicia sesión de nuevo."), backgroundColor: Colors.green),
+                      );
+
+                      // 3. Forzamos el cierre de sesión para evitar inconsistencias
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                        (route) => false,
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("La contraseña actual es incorrecta."), backgroundColor: Colors.red),
+                      );
+                    }
+                  },
+                  child: const Text("Guardar Cambios", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

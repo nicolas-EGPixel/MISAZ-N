@@ -3,11 +3,13 @@ import 'dart:io';
 import '../base_de_datos/db_helper.dart'; // 👈 importa tu DBHelper
 
 class PurchaseFormPage extends StatefulWidget {
+  final String userEmail;
   final String platillo;
   final double precio;
   final String imagePath;
 
   PurchaseFormPage({
+    required this.userEmail,
     required this.platillo,
     required this.precio,
     required this.imagePath,
@@ -180,6 +182,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage> {
 
                         // 👇 Guardar en la BD
                         await DBHelper.registrarPedido(
+                          widget.userEmail,
                           widget.platillo,
                           cantidad,
                           direccionController.text,
