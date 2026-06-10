@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'compras.dart'; // Importa la página de compras para navegar desde el botón "Comprar ahora"
+import 'compras.dart'; 
+import '../base_de_datos/db_helper.dart'; // 👈 Importamos la BD
 
-class FoodDetailPage extends StatelessWidget {
+class FoodDetailPage extends StatefulWidget {
+  final int id; // 🔸 Recibimos el ID del platillo
+  final String userEmail; // 🔸 Recibimos el email del usuario logueado
   final String title;
   final String description;
   final String imagePath;
   final double rating;
   final int reviews;
   final double price;
-  final String? categoria; // opcional
+  final String? categoria; 
 
   FoodDetailPage({
+    required this.id,
+    required this.userEmail,
     required this.title,
     required this.description,
     required this.imagePath,
@@ -22,112 +27,133 @@ class FoodDetailPage extends StatelessWidget {
   });
 
   @override
+  _FoodDetailPageState createState() => _FoodDetailPageState();
+}
+
+class _FoodDetailPageState extends State<FoodDetailPage> {
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _comprobarSiEsFavorito();
+  }
+
+  // Comprobamos al iniciar la pantalla si este platillo ya tiene el corazón marcado
+  Future<void> _comprobarSiEsFavorito() async {
+    bool fav = await DBHelper.esFavorito(widget.userEmail, widget.id);
+    setState(() {
+      _isFavorite = fav;
+    });
+  }
+
+  // Método al presionar el corazón
+  Future<void> _toggleFavorite() async {
+    await DBHelper.alternarFavorito(widget.userEmail, widget.id);
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_isFavorite ? "¡Añadido a favoritos! ❤️" : "Eliminado de favoritos 💔"),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.deepOrange,
-        title: Text(title),
+        title: Text(widget.title),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 Imagen segura (assets o archivo local)
-            imagePath.startsWith("assets")
+            // Imagen segura (assets o archivo local)
+            widget.imagePath.startsWith("assets")
                 ? Image.asset(
-                    imagePath,
+                    widget.imagePath,
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   )
                 : Image.file(
-                    File(imagePath),
+                    File(widget.imagePath),
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Image.asset("assets/images/default.webp",
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.cover),
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 220,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.fastfood, size: 50, color: Colors.grey),
+                      );
+                    },
                   ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Descripción
-                  Text(description,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[800])),
-                  SizedBox(height: 10),
-
-                  // Rating y reseñas
+                  Text(widget.description, style: TextStyle(fontSize: 16, color: Colors.grey[800])),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
-                      Icon(Icons.star, color: Colors.amber),
-                      Text("$rating ($reviews reseñas)",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14)),
+                      const Icon(Icons.star, color: Colors.amber),
+                      Text("${widget.rating} (${widget.reviews} reseñas)", style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  SizedBox(height: 10),
-
-                  // Precio
-                  Text("\$$price",
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange)),
-                  SizedBox(height: 10),
-
-                  // Categoría (si existe)
-                  if (categoria != null && categoria!.isNotEmpty)
-                    Text("Categoría: $categoria",
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[700])),
-
-                  SizedBox(height: 20),
-
-                  // Botones de acción
+                  const SizedBox(height: 15),
+                  Text("\$${widget.price}", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepOrange)),
+                  const SizedBox(height: 20),
+                  
+                  // Fila de botones de acción
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton.icon(
-                       onPressed: () {
-                        Navigator.push(
-                         context,
-                          MaterialPageRoute(
-                           builder: (context) => PurchaseFormPage(
-                            platillo: title,
-                            precio: price,
-                            imagePath: imagePath, // 👈 viene de la BD
-                          ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PurchaseFormPage(
+                                platillo: widget.title,
+                                precio: widget.price,
+                                imagePath: widget.imagePath,
+                                userEmail: widget.userEmail,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.shopping_cart),
+                        label: const Text("Comprar ahora"),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
+                      ),
+                      const Spacer(),
+                      
+                      // 🔸 ICONO DE CORAZÓN INTERACTIVO ACTUALIZADO
+                      IconButton(
+                        icon: Icon(
+                          _isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.deepOrange,
+                          size: 30,
                         ),
-                      );
-                    },
-                    icon: Icon(Icons.shopping_cart),
-                    label: Text("Comprar ahora"),
-                    style: ElevatedButton.styleFrom(
-                     backgroundColor: Colors.deepOrange,
-                    ),
-                  ),
+                        onPressed: _toggleFavorite,
+                      ),
                     ],
                   ),
-                  SizedBox(height: 30),
-
-                  // Reseñas
-                  Text("Reseñas",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Divider(),
-                  ListTile(
+                  const SizedBox(height: 30),
+                  const Text("Reseñas", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Divider(),
+                  const ListTile(
                     leading: Icon(Icons.person),
                     title: Text("María García"),
                     subtitle: Text("¡Excelente! La mejor pizza que he probado."),
                   ),
-                  ListTile(
+                  const ListTile(
                     leading: Icon(Icons.person),
                     title: Text("Carlos Ruiz"),
                     subtitle: Text("Muy buena calidad y sabor."),

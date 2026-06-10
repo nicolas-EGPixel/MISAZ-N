@@ -62,6 +62,7 @@ class DBHelper {
           await db.execute('''
             CREATE TABLE tb_pedidos (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
+              gmail_usuario TEXT,
               nombre_platillo TEXT,
               cantidad INTEGER,
               direccion TEXT,
@@ -82,7 +83,15 @@ class DBHelper {
               envio REAL
             )
           ''');
-
+          
+          // 🔸 NUEVO: Tabla para guardar los platillos favoritos vinculados al usuario
+          await db.execute('''
+            CREATE TABLE tb_favoritos (
+              id_favorito INTEGER PRIMARY KEY AUTOINCREMENT,
+              gmail_usuario TEXT,
+              id_platillo INTEGER
+            )
+          ''');
         },
         onUpgrade: (db, oldVersion, newVersion) async {
           if (oldVersion < 2) {
@@ -259,6 +268,7 @@ class DBHelper {
   }
   // --- MÉTODOS DE PEDIDOS ---
 static Future<int> registrarPedido(
+    String gmail,
     String platillo,
     int cantidad,
     String direccion,
@@ -269,6 +279,7 @@ static Future<int> registrarPedido(
     double total) async {
   final db = await initDB();
   return await db.insert("tb_pedidos", {
+    "gmail_usuario": gmail,
     "nombre_platillo": platillo,
     "cantidad": cantidad,
     "direccion": direccion,
@@ -312,5 +323,97 @@ static Future<int> eliminarPedido(int id) async {
   return await db.delete("tb_pedidos", where: "id = ?", whereArgs: [id]);
 }
 
+// 🔸 NUEVO: Verificar si la contraseña actual es correcta
+  static Future<bool> verificarContrasena(String gmail, String password) async {
+    final db = await initDB();
+    final res = await db.query(
+      "tb_datos",
+      where: "gmail = ? AND contraseña = ?",
+      whereArgs: [gmail, password],
+    );
+    return res.isNotEmpty;
+  }
 
+  // 🔸 NUEVO: Actualizar los datos del usuario
+  static Future<int> actualizarUsuario(String oldGmail, String newName, String newGmail, String newPassword) async {
+    final db = await initDB();
+    return await db.update(
+      "tb_datos",
+      {
+        "nombre": newName,
+        "gmail": newGmail,
+        "contraseña": newPassword
+      },
+      where: "gmail = ?",
+      whereArgs: [oldGmail],
+    );
+  }
+
+  // 🔸 NUEVO: Dar o quitar favorito (Toggle)
+  static Future<void> alternarFavorito(String gmail, int idPlatillo) async {
+    final db = await initDB();
+    // Verificamos si ya existe
+    final existe = await db.query(
+      "tb_favoritos",
+      where: "gmail_usuario = ? AND id_platillo = ?",
+      whereArgs: [gmail, idPlatillo],
+    );
+
+    if (existe.isNotEmpty) {
+      // Si ya existía, lo quitamos (Quitamos el corazón)
+      await db.delete(
+        "tb_favoritos",
+        where: "gmail_usuario = ? AND id_platillo = ?",
+        whereArgs: [gmail, idPlatillo],
+      );
+    } else {
+      // Si no existía, lo agregamos (Damos corazón)
+      await db.insert("tb_favoritos", {
+        "gmail_usuario": gmail,
+        "id_platillo": idPlatillo,
+      });
+    }
+  }
+
+  // 🔸 NUEVO: Verificar si un platillo específico tiene favorito por este usuario
+  static Future<bool> esFavorito(String gmail, int idPlatillo) async {
+    final db = await initDB();
+    final res = await db.query(
+      "tb_favoritos",
+      where: "gmail_usuario = ? AND id_platillo = ?",
+      whereArgs: [gmail, idPlatillo],
+    );
+    return res.isNotEmpty;
+  }
+
+  // 🔸 NUEVO: Obtener la lista completa de platillos que son favoritos del usuario
+  static Future<List<Map<String, dynamic>>> obtenerPlatillosFavoritos(String gmail) async {
+    final db = await initDB();
+    // Hacemos un INNER JOIN para traernos la información completa del platillo usando el ID guardado
+    return await db.rawQuery('''
+      SELECT p.* FROM tb_platillos p
+      INNER JOIN tb_favoritos f ON p.id = f.id_platillo
+      WHERE f.gmail_usuario = ?
+    ''', [gmail]);
+  }
+
+  // 🔸 NUEVO: Buscar platillos por coincidencia de nombre
+  static Future<List<Map<String, dynamic>>> buscarPlatillos(String consulta) async {
+    final db = await initDB();
+    return await db.query(
+      "tb_platillos",
+      where: "nombre_platillo LIKE ?",
+      whereArgs: ['%$consulta%'],
+    );
+  }
+
+  // 🔸 NUEVO: Obtener el historial de pedidos de un usuario en específico
+  static Future<List<Map<String, dynamic>>> obtenerPedidosPorUsuario(String gmail) async {
+    final db = await initDB();
+    return await db.query(
+      "tb_pedidos",
+      where: "gmail_usuario = ?",
+      whereArgs: [gmail],
+    );
+  }
 }

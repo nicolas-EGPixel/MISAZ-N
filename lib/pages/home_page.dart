@@ -241,13 +241,25 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // 🔸 NUEVO: Función que se ejecuta cada vez que el usuario escribe algo
+  void _ejecutarBusqueda(String texto) async {
+    if (texto.isEmpty) {
+      _cargarPlatillos(); // Si borra todo, volvemos a mostrar todos los platillos
+    } else {
+      final resultados = await DBHelper.buscarPlatillos(texto);
+      setState(() {
+        platillos = resultados; // Actualizamos la lista con lo que encontró
+      });
+    }
+  }
+
   List<Widget> _obtenerPaginas() {
     return [
       _inicioPage(),
       MapaPage(),
       if (_esVendedor) PublicarPage(usuario: widget.usuario),
       if (_esRepartidor) EntregasPage(usuario: widget.usuario), // 👈 nueva
-      FavoritosPage(),
+      FavoritosPage(usuario: widget.usuario), // 👈 CORRECCIÓN APLICADA AQUÍ
       PerfilPage(
         usuario: widget.usuario,
         onRoleSelected: (String role) {
@@ -304,10 +316,12 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 🔎 Buscador
+          // 🔎 Buscador
           TextField(
+            onChanged: (value) => _ejecutarBusqueda(value), // 👈 ESTO ES LO QUE CONECTA LA BÚSQUEDA
             decoration: InputDecoration(
               hintText: "Buscar alimentos...",
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -353,6 +367,7 @@ class _HomePageState extends State<HomePage> {
               : Column(
                   children: platillos.map((p) {
                     return _foodCard(
+                      p["id"] ?? 0, // 👈 Pasamos el ID real desde la base de datos
                       p["nombre_platillo"],
                       p["descripcion"],
                       p["imagen"],
@@ -369,7 +384,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _foodCard(String title, String description, String imagePath,
+  Widget _foodCard(int id, String title, String description, String imagePath,
       double rating, int reviews, double price) {
     return GestureDetector(
       onTap: () {
@@ -377,6 +392,8 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
             builder: (context) => FoodDetailPage(
+              id: id, // 👈 Usamos el ID que recibimos correctamente
+              userEmail: widget.usuario['gmail'] ?? "",
               title: title,
               description: description,
               imagePath: imagePath,
