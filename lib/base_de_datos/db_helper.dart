@@ -46,7 +46,8 @@ class DBHelper {
               nombre_platillo TEXT,
               descripcion TEXT,
               precio REAL,
-              imagen TEXT
+              imagen TEXT,
+              categoria TEXT 
             )
           ''');
           // Tabla de repartidores
@@ -105,6 +106,8 @@ class DBHelper {
                 completadas INTEGER
               )
             ''');
+            // 👇 añadimos la columna categoria si no existía
+            await db.execute("ALTER TABLE tb_platillos ADD COLUMN categoria TEXT");
           }
         },
       ),
@@ -171,7 +174,9 @@ class DBHelper {
   }
 
   // --- MÉTODOS DE PLATILLOS ---
-  static Future<int> insertarPlatillo(String gmail, String nombre, String descripcion, double precio, String imagen, String categoria) async {
+  static Future<int> insertarPlatillo(
+    String gmail, String nombre, String descripcion, 
+    double precio, String imagen, String categoria) async {
     final db = await initDB();
     return await db.insert("tb_platillos", {
       "gmail_usuario": gmail,
@@ -179,6 +184,7 @@ class DBHelper {
       "descripcion": descripcion,
       "precio": precio,
       "imagen": imagen,
+      "categoria": categoria,
     });
   }
 
@@ -218,6 +224,7 @@ class DBHelper {
         "descripcion": descripcion,
         "precio": precio,
         "imagen": imagen,
+        "categoria": categoria, // 👈 ahora sí se actualiza
       },
       where: "id = ?",
       whereArgs: [id],

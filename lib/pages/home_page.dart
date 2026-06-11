@@ -4,7 +4,7 @@ import 'favoritos.dart';
 import 'perfil.dart';
 import 'food_detail_page.dart';
 import 'entregas.dart';
-import 'publicar.dart'; // 👈 ahora importamos la pantalla de publicar
+import 'publicar.dart';
 import '../base_de_datos/db_helper.dart';
 import 'dart:io';
 
@@ -22,15 +22,17 @@ class _HomePageState extends State<HomePage> {
   bool _esRepartidor = false;
   List<Map<String, dynamic>> platillos = [];
 
+  String? _categoriaSeleccionada; // categoría activa
+
   final List<Map<String, dynamic>> categories = [
     {"icon": Icons.local_pizza, "label": "Pizzas"},
     {"icon": Icons.fastfood, "label": "Hamburguesas"},
-    {"icon": Icons.rice_bowl, "label": "Sushi"},
-    {"icon": Icons.local_dining, "label": "Mexicana"},
+    {"icon": Icons.local_dining, "label": "Tacos"},
     {"icon": Icons.eco, "label": "Ensaladas"},
     {"icon": Icons.set_meal, "label": "Pasta"},
     {"icon": Icons.cake, "label": "Postres"},
     {"icon": Icons.local_drink, "label": "Bebidas"},
+    {"icon": Icons.rice_bowl, "label": "Otros"},
   ];
 
   @override
@@ -69,6 +71,23 @@ class _HomePageState extends State<HomePage> {
       final resultados = await DBHelper.buscarPlatillos(texto);
       setState(() {
         platillos = resultados;
+        _categoriaSeleccionada = null; // reset categoría si se busca
+      });
+    }
+  }
+
+  void _filtrarPorCategoria(String categoria) async {
+    if (_categoriaSeleccionada == categoria) {
+      _cargarPlatillos(); // reset si se vuelve a tocar
+      setState(() {
+        _categoriaSeleccionada = null;
+      });
+    } else {
+      final dbPlatillos = await DBHelper.getPlatillos();
+      final filtrados = dbPlatillos.where((p) => p["categoria"] == categoria).toList();
+      setState(() {
+        platillos = filtrados;
+        _categoriaSeleccionada = categoria;
       });
     }
   }
@@ -160,16 +179,28 @@ class _HomePageState extends State<HomePage> {
             ),
             itemBuilder: (context, index) {
               final item = categories[index];
-              return Column(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.deepOrange.shade100,
-                    child: Icon(item["icon"], size: 28, color: Colors.deepOrange),
-                  ),
-                  SizedBox(height: 6),
-                  Text(item["label"], style: TextStyle(fontSize: 12)),
-                ],
+              final isSelected = _categoriaSeleccionada == item["label"];
+
+              return GestureDetector(
+                onTap: () => _filtrarPorCategoria(item["label"]),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: isSelected ? Colors.deepOrange : Colors.deepOrange.shade100,
+                      child: Icon(item["icon"], size: 28, color: isSelected ? Colors.white : Colors.deepOrange),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      item["label"],
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.deepOrange : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
@@ -232,15 +263,12 @@ class _HomePageState extends State<HomePage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              child: imagePath.toString().startsWith("assets")
-                  ? Image.asset(imagePath,
-                      height: 160, width: double.infinity, fit: BoxFit.cover)
-                  : Image.file(File(imagePath),
-                      height: 160,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Image.asset("assets/images/default.webp")),
+              child: Image.file(
+                File(imagePath),
+                height: 160,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
@@ -252,7 +280,10 @@ class _HomePageState extends State<HomePage> {
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   SizedBox(height: 4),
                   Text(description,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis),
                   SizedBox(height: 6),

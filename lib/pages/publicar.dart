@@ -15,12 +15,25 @@ class _PublicarPageState extends State<PublicarPage> {
   final TextEditingController nombreController = TextEditingController();
   final TextEditingController descripcionController = TextEditingController();
   final TextEditingController precioController = TextEditingController();
-  final TextEditingController categoriaController = TextEditingController();
 
   File? _imagenSeleccionada;
   final ImagePicker _picker = ImagePicker();
 
   List<Map<String, dynamic>> _misPlatillos = [];
+
+  // 🔹 Lista fija de categorías
+  final List<String> categorias = [
+    "Pizzas",
+    "Hamburguesas",
+    "Tacos",
+    "Ensaladas",
+    "Pasta",
+    "Postres",
+    "Bebidas",
+    "Otros",
+  ];
+
+  String? _categoriaSeleccionada;
 
   @override
   void initState() {
@@ -88,11 +101,25 @@ class _PublicarPageState extends State<PublicarPage> {
             ),
             SizedBox(height: 15),
 
-            TextField(
-              controller: categoriaController,
+            // 🔹 Dropdown de categorías
+            DropdownButtonFormField<String>(
+              value: _categoriaSeleccionada,
+              items: categorias.map((cat) {
+                return DropdownMenuItem(
+                  value: cat,
+                  child: Text(cat),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _categoriaSeleccionada = value;
+                });
+              },
               decoration: InputDecoration(
-                labelText: "Categoría",
-                hintText: "Pizzas, Pasta...",
+                labelText: "Categoría *",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             SizedBox(height: 20),
@@ -129,7 +156,8 @@ class _PublicarPageState extends State<PublicarPage> {
             ElevatedButton.icon(
               onPressed: () async {
                 if (nombreController.text.isNotEmpty &&
-                    precioController.text.isNotEmpty) {
+                    precioController.text.isNotEmpty &&
+                    _categoriaSeleccionada != null) {
                   double precio = double.parse(precioController.text);
                   await DBHelper.insertarPlatillo(
                     widget.usuario['gmail'] ?? "",
@@ -137,12 +165,16 @@ class _PublicarPageState extends State<PublicarPage> {
                     descripcionController.text,
                     precio,
                     _imagenSeleccionada?.path ?? "assets/images/default.webp",
-                    categoriaController.text,
+                    _categoriaSeleccionada!, // 👈 se guarda la categoría
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Platillo publicado ✅")),
                   );
                   _cargarMisPlatillos();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Completa todos los campos obligatorios (*)")),
+                  );
                 }
               },
               icon: Icon(Icons.shopping_cart),
@@ -169,7 +201,9 @@ class _PublicarPageState extends State<PublicarPage> {
                                 errorBuilder: (context, error, stackTrace) =>
                                     Icon(Icons.fastfood)),
                         title: Text(p["nombre_platillo"]),
-                        subtitle: Text("${p["descripcion"]}\n\$${p["precio"]}"),
+                        subtitle: Text(
+                          "${p["descripcion"]}\n\$${p["precio"]}\nCategoría: ${p["categoria"] ?? "Sin categoría"}",
+                        ),
                         trailing: Icon(Icons.check, color: Colors.green),
                       );
                     }).toList(),
