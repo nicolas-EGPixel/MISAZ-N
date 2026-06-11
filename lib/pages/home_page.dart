@@ -7,6 +7,8 @@ import 'entregas.dart';
 import 'publicar.dart';
 import '../base_de_datos/db_helper.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> usuario;
@@ -23,6 +25,8 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> platillos = [];
 
   String? _categoriaSeleccionada; // categoría activa
+
+  String _ubicacion = "Detectando tu ubicación...";
 
   final List<Map<String, dynamic>> categories = [
     {"icon": Icons.local_pizza, "label": "Pizzas"},
@@ -41,6 +45,7 @@ class _HomePageState extends State<HomePage> {
     _verificarRolVendedor();
     _verificarRolRepartidor();
     _cargarPlatillos();
+    _obtenerUbicacionIP();
   }
 
   void _verificarRolVendedor() async {
@@ -148,11 +153,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _inicioPage() {
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
+          Row(
+            children: [
+              Icon(Icons.location_on, color: Colors.deepOrange, size: 20),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _ubicacion,
+                  style: TextStyle(
+                    fontSize: 14, 
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade800
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 15),
+          
           // 🔎 Buscador
           TextField(
             onChanged: (value) => _ejecutarBusqueda(value),
@@ -309,5 +335,26 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _obtenerUbicacionIP() async {
+    try {
+      final response = await http.get(Uri.parse('https://ipapi.co/json/'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          // Extraemos la ciudad y el estado (región)
+          _ubicacion = "Repartiendo en: ${data['city']}, ${data['region']}";
+        });
+      } else {
+        setState(() {
+          _ubicacion = "Ubicación no disponible";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _ubicacion = "Error al obtener ubicación";
+      });
+    }
   }
 }
