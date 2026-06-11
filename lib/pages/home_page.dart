@@ -4,193 +4,14 @@ import 'favoritos.dart';
 import 'perfil.dart';
 import 'food_detail_page.dart';
 import 'entregas.dart';
+import 'publicar.dart'; // 👈 ahora importamos la pantalla de publicar
 import '../base_de_datos/db_helper.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 
-// 🔸 PANTALLA DE PUBLICAR PLATILLOS
-class PublicarPage extends StatefulWidget {
-  final Map<String, dynamic> usuario;
-  PublicarPage({required this.usuario});
-
-  @override
-  _PublicarPageState createState() => _PublicarPageState();
-}
-
-class _PublicarPageState extends State<PublicarPage> {
-  final TextEditingController nombreController = TextEditingController();
-  final TextEditingController descripcionController = TextEditingController();
-  final TextEditingController precioController = TextEditingController();
-  final TextEditingController categoriaController = TextEditingController();
-
-  File? _imagenSeleccionada;
-  final ImagePicker _picker = ImagePicker();
-
-  List<Map<String, dynamic>> _misPlatillos = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _cargarMisPlatillos();
-  }
-
-  Future<void> _cargarMisPlatillos() async {
-    String email = widget.usuario['gmail'] ?? "";
-    if (email.isNotEmpty) {
-      final platillos = await DBHelper.obtenerPlatillosPorUsuario(email);
-      setState(() {
-        _misPlatillos = platillos;
-      });
-    }
-  }
-
-  Future<void> _seleccionarImagen() async {
-    final XFile? imagen = await _picker.pickImage(source: ImageSource.gallery);
-    if (imagen != null) {
-      setState(() {
-        _imagenSeleccionada = File(imagen.path);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Añadir nuevo plato al menú",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 20),
-
-            TextField(
-              controller: nombreController,
-              decoration: InputDecoration(
-                labelText: "Nombre del plato *",
-                hintText: "Ej: Pizza Margarita (Centro)",
-              ),
-            ),
-            SizedBox(height: 15),
-
-            TextField(
-              controller: descripcionController,
-              decoration: InputDecoration(
-                labelText: "Descripción",
-                hintText: "Describe tu plato...",
-              ),
-              maxLines: 3,
-            ),
-            SizedBox(height: 15),
-
-            TextField(
-              controller: precioController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Precio (Pesos) *",
-                hintText: "\$12.99",
-              ),
-            ),
-            SizedBox(height: 15),
-
-            TextField(
-              controller: categoriaController,
-              decoration: InputDecoration(
-                labelText: "Categoría",
-                hintText: "Pizzas, Pasta...",
-              ),
-            ),
-            SizedBox(height: 20),
-
-            Text("Imagen del plato",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-
-            GestureDetector(
-              onTap: _seleccionarImagen,
-              child: Container(
-                height: 150,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: _imagenSeleccionada == null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_a_photo,
-                                size: 40, color: Colors.deepOrange),
-                            SizedBox(height: 8),
-                            Text("Click para subir imagen JPG, PNG o WEBP"),
-                          ],
-                        ),
-                      )
-                    : Image.file(_imagenSeleccionada!, fit: BoxFit.cover),
-              ),
-            ),
-            SizedBox(height: 25),
-
-            ElevatedButton.icon(
-              onPressed: () async {
-                if (nombreController.text.isNotEmpty &&
-                    precioController.text.isNotEmpty) {
-                  double precio = double.parse(precioController.text);
-                  await DBHelper.insertarPlatillo(
-                    widget.usuario['gmail'] ?? "",
-                    nombreController.text,
-                    descripcionController.text,
-                    precio,
-                    _imagenSeleccionada?.path ?? "assets/images/default.webp",
-                    categoriaController.text,
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Platillo publicado ✅")),
-                  );
-                  _cargarMisPlatillos();
-                }
-              },
-              icon: Icon(Icons.shopping_cart),
-              label: Text("Añadir al menú"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
-                minimumSize: Size(double.infinity, 50),
-              ),
-            ),
-            SizedBox(height: 30),
-
-            Text("Menú actual",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Divider(),
-            _misPlatillos.isEmpty
-                ? Text("No has publicado platillos aún.")
-                : Column(
-                    children: _misPlatillos.map((p) {
-                      return ListTile(
-                        leading: p["imagen"].toString().startsWith("assets")
-                            ? Image.asset(p["imagen"], width: 50, height: 50)
-                            : Image.file(File(p["imagen"]),
-                                width: 50, height: 50,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Icon(Icons.fastfood)),
-                        title: Text(p["nombre_platillo"]),
-                        subtitle: Text("${p["descripcion"]}\n\$${p["precio"]}"),
-                        trailing: Icon(Icons.check, color: Colors.green),
-                      );
-                    }).toList(),
-                  ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// 🔸 HOME PAGE
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> usuario;
   HomePage({required this.usuario});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -228,11 +49,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _verificarRolRepartidor() async {
-  final repartidor = await DBHelper.obtenerRepartidorPorUsuario(widget.usuario['gmail'] ?? "");
-  setState(() {
-    _esRepartidor = repartidor != null; // true si existe registro en tb_repartidor
-  });
-}
+    final repartidor = await DBHelper.obtenerRepartidorPorUsuario(widget.usuario['gmail'] ?? "");
+    setState(() {
+      _esRepartidor = repartidor != null;
+    });
+  }
 
   void _cargarPlatillos() async {
     final data = await DBHelper.getPlatillos();
@@ -241,14 +62,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // 🔸 NUEVO: Función que se ejecuta cada vez que el usuario escribe algo
   void _ejecutarBusqueda(String texto) async {
     if (texto.isEmpty) {
-      _cargarPlatillos(); // Si borra todo, volvemos a mostrar todos los platillos
+      _cargarPlatillos();
     } else {
       final resultados = await DBHelper.buscarPlatillos(texto);
       setState(() {
-        platillos = resultados; // Actualizamos la lista con lo que encontró
+        platillos = resultados;
       });
     }
   }
@@ -258,31 +78,30 @@ class _HomePageState extends State<HomePage> {
       _inicioPage(),
       MapaPage(usuario: widget.usuario),
       if (_esVendedor) PublicarPage(usuario: widget.usuario),
-      if (_esRepartidor) EntregasPage(usuario: widget.usuario), // 👈 nueva
-      FavoritosPage(usuario: widget.usuario), // 👈 CORRECCIÓN APLICADA AQUÍ
+      if (_esRepartidor) EntregasPage(usuario: widget.usuario),
+      FavoritosPage(usuario: widget.usuario),
       PerfilPage(
         usuario: widget.usuario,
         onRoleSelected: (String role) {
           _verificarRolVendedor();
-          _verificarRolRepartidor(); // 👈 actualizar también repartidor
+          _verificarRolRepartidor();
         },
       ),
     ];
   }
 
   List<BottomNavigationBarItem> _obtenerItems() {
-  return [
-    const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
-    const BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa"),
-    if (_esVendedor)
-      const BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Publicar"),
-    if (_esRepartidor)
-      const BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: "Entregas"), // 👈 nueva
-    const BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
-    const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
-  ];
-}
-
+    return [
+      const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+      const BottomNavigationBarItem(icon: Icon(Icons.map), label: "Mapa"),
+      if (_esVendedor)
+        const BottomNavigationBarItem(icon: Icon(Icons.add_box), label: "Publicar"),
+      if (_esRepartidor)
+        const BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: "Entregas"),
+      const BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
+      const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,16 +128,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-    Widget _inicioPage() {
+  Widget _inicioPage() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 🔎 Buscador
-          // 🔎 Buscador
           TextField(
-            onChanged: (value) => _ejecutarBusqueda(value), // 👈 ESTO ES LO QUE CONECTA LA BÚSQUEDA
+            onChanged: (value) => _ejecutarBusqueda(value),
             decoration: InputDecoration(
               hintText: "Buscar alimentos...",
               prefixIcon: const Icon(Icons.search),
@@ -367,15 +185,13 @@ class _HomePageState extends State<HomePage> {
               : Column(
                   children: platillos.map((p) {
                     return _foodCard(
-                      p["id"] ?? 0, // 👈 Pasamos el ID real desde la base de datos
+                      p["id"] ?? 0,
                       p["nombre_platillo"],
                       p["descripcion"],
                       p["imagen"],
-                      4.5, // rating fijo
-                      128, // reviews fijos
-                      p["precio"] is int
-                          ? (p["precio"] as int).toDouble()
-                          : p["precio"],
+                      4.5,
+                      128,
+                      p["precio"] is int ? (p["precio"] as int).toDouble() : p["precio"],
                     );
                   }).toList(),
                 ),
@@ -392,7 +208,7 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
             builder: (context) => FoodDetailPage(
-              id: id, // 👈 Usamos el ID que recibimos correctamente
+              id: id,
               userEmail: widget.usuario['gmail'] ?? "",
               title: title,
               description: description,
