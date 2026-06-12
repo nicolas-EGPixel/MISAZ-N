@@ -1,8 +1,18 @@
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import '../models/platillo_model.dart';
 
 class DBHelper {
-  static Future<Database> initDB() async {
+
+  static Database? _database;
+
+  static Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB(); // 👈 Llama al método con guion bajo
+    return _database!;
+  }
+
+  static Future<Database> _initDB() async {
     // Inicialización para Windows/Linux
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -116,7 +126,7 @@ class DBHelper {
 
   // --- MÉTODOS DE USUARIO ---
   static Future<int> insertUsuario(String nombre, String gmail, String password) async {
-    final db = await initDB();
+    final db = await database;
     return await db.insert("tb_datos", {
       "nombre": nombre,
       "gmail": gmail,
@@ -125,7 +135,7 @@ class DBHelper {
   }
 
   static Future<Map<String, dynamic>?> login(String gmail, String password) async {
-    final db = await initDB();
+    final db = await database;
     final res = await db.query(
       "tb_datos",
       where: "gmail = ? AND contraseña = ?",
@@ -135,7 +145,7 @@ class DBHelper {
   }
 
   static Future<int> eliminarUsuario(String gmail) async {
-    final db = await initDB();
+    final db = await database;
     return await db.delete(
       'tb_datos',
       where: 'gmail = ?',
@@ -151,7 +161,7 @@ class DBHelper {
     String direccion,
     String telefono,
     String fotoNegocio) async {
-  final db = await initDB();
+  final db = await database;
   return await db.insert("tb_negocios", {
     "gmail_usuario": gmail,
     "nombre_negocio": nombre,
@@ -164,7 +174,7 @@ class DBHelper {
 
 
   static Future<bool> esVendedor(String gmail) async {
-    final db = await initDB();
+    final db = await database;
     final res = await db.query(
       "tb_negocios",
       where: "gmail_usuario = ?",
@@ -177,7 +187,7 @@ class DBHelper {
   static Future<int> insertarPlatillo(
     String gmail, String nombre, String descripcion, 
     double precio, String imagen, String categoria) async {
-    final db = await initDB();
+    final db = await database;
     return await db.insert("tb_platillos", {
       "gmail_usuario": gmail,
       "nombre_platillo": nombre,
@@ -190,7 +200,7 @@ class DBHelper {
 
   // Platillos de un usuario específico
   static Future<List<Map<String, dynamic>>> obtenerPlatillosPorUsuario(String gmail) async {
-    final db = await initDB();
+    final db = await database;
     return await db.query(
       "tb_platillos",
       where: "gmail_usuario = ?",
@@ -200,13 +210,13 @@ class DBHelper {
 
   // Obtener todos los platillos publicados
   static Future<List<Map<String, dynamic>>> getPlatillos() async {
-    final db = await initDB();
+    final db = await database;
     return await db.query("tb_platillos");
   }
 
   // Eliminar un platillo
   static Future<int> eliminarPlatillo(int id) async {
-    final db = await initDB();
+    final db = await database;
     return await db.delete(
       "tb_platillos",
       where: "id = ?",
@@ -216,7 +226,7 @@ class DBHelper {
 
   // Actualizar un platillo
   static Future<int> actualizarPlatillo(int id, String nombre, String descripcion, double precio, String imagen, String categoria) async {
-    final db = await initDB();
+    final db = await database;
     return await db.update(
       "tb_platillos",
       {
@@ -232,7 +242,7 @@ class DBHelper {
   }
 
   static Future<int> actualizarFotoPerfil(String gmail, String rutaImagen) async {
-    final db = await initDB();
+    final db = await database;
     return await db.update(
       'tb_datos',
       {'foto_perfil': rutaImagen},
@@ -244,7 +254,7 @@ class DBHelper {
   // --- MÉTODOS DE REPARTIDOR ---
   static Future<int> registrarRepartidor(
       String gmail, String licencia, int ordenes, int completadas) async {
-    final db = await initDB();
+    final db = await database;
     return await db.insert("tb_repartidor", {
       "gmail_usuario": gmail,
       "num_licencia": licencia,
@@ -254,13 +264,13 @@ class DBHelper {
   }
 
   static Future<List<Map<String, dynamic>>> obtenerRepartidores() async {
-    final db = await initDB();
+    final db = await database;
     return await db.query("tb_repartidor");
   }
 
   static Future<Map<String, dynamic>?> obtenerRepartidorPorUsuario(
       String gmail) async {
-    final db = await initDB();
+    final db = await database;
     final res = await db.query(
       "tb_repartidor",
       where: "gmail_usuario = ?",
@@ -271,7 +281,7 @@ class DBHelper {
 
   static Future<int> actualizarRepartidor(
       int id, int ordenes, int completadas) async {
-    final db = await initDB();
+    final db = await database;
     return await db.update(
       "tb_repartidor",
       {
@@ -293,7 +303,7 @@ static Future<int> registrarPedido(
     double subtotal,
     double envio,
     double total) async {
-  final db = await initDB();
+  final db = await database;
   return await db.insert("tb_pedidos", {
     "gmail_usuario": gmail,
     "nombre_platillo": platillo,
@@ -308,7 +318,7 @@ static Future<int> registrarPedido(
 }
 
 static Future<List<Map<String, dynamic>>> obtenerPedidos() async {
-  final db = await initDB();
+  final db = await database;
   return await db.query("tb_pedidos");
 }
 
@@ -318,7 +328,7 @@ static Future<int> registrarCompletado(
     int cantidad,
     String direccion,
     double envio) async {
-  final db = await initDB();
+  final db = await database;
   return await db.insert("tb_completados", {
     "nombre_platillo": platillo,
     "cantidad": cantidad,
@@ -329,19 +339,19 @@ static Future<int> registrarCompletado(
 
 // Obtener completados
 static Future<List<Map<String, dynamic>>> obtenerCompletados() async {
-  final db = await initDB();
+  final db = await database;
   return await db.query("tb_completados");
 }
 
 // Eliminar pedido de tb_pedidos
 static Future<int> eliminarPedido(int id) async {
-  final db = await initDB();
+  final db = await database;
   return await db.delete("tb_pedidos", where: "id = ?", whereArgs: [id]);
 }
 
 // 🔸 NUEVO: Verificar si la contraseña actual es correcta
   static Future<bool> verificarContrasena(String gmail, String password) async {
-    final db = await initDB();
+    final db = await database;
     final res = await db.query(
       "tb_datos",
       where: "gmail = ? AND contraseña = ?",
@@ -352,7 +362,7 @@ static Future<int> eliminarPedido(int id) async {
 
   // 🔸 NUEVO: Actualizar los datos del usuario
   static Future<int> actualizarUsuario(String oldGmail, String newName, String newGmail, String newPassword) async {
-    final db = await initDB();
+    final db = await database;
     return await db.update(
       "tb_datos",
       {
@@ -367,7 +377,7 @@ static Future<int> eliminarPedido(int id) async {
 
   // 🔸 NUEVO: Dar o quitar favorito (Toggle)
   static Future<void> alternarFavorito(String gmail, int idPlatillo) async {
-    final db = await initDB();
+    final db = await database;
     // Verificamos si ya existe
     final existe = await db.query(
       "tb_favoritos",
@@ -393,7 +403,7 @@ static Future<int> eliminarPedido(int id) async {
 
   // 🔸 NUEVO: Verificar si un platillo específico tiene favorito por este usuario
   static Future<bool> esFavorito(String gmail, int idPlatillo) async {
-    final db = await initDB();
+    final db = await database;
     final res = await db.query(
       "tb_favoritos",
       where: "gmail_usuario = ? AND id_platillo = ?",
@@ -404,7 +414,7 @@ static Future<int> eliminarPedido(int id) async {
 
   // 🔸 NUEVO: Obtener la lista completa de platillos que son favoritos del usuario
   static Future<List<Map<String, dynamic>>> obtenerPlatillosFavoritos(String gmail) async {
-    final db = await initDB();
+    final db = await database;
     // Hacemos un INNER JOIN para traernos la información completa del platillo usando el ID guardado
     return await db.rawQuery('''
       SELECT p.* FROM tb_platillos p
@@ -415,7 +425,7 @@ static Future<int> eliminarPedido(int id) async {
 
   // 🔸 NUEVO: Buscar platillos por coincidencia de nombre
   static Future<List<Map<String, dynamic>>> buscarPlatillos(String consulta) async {
-    final db = await initDB();
+    final db = await database;
     return await db.query(
       "tb_platillos",
       where: "nombre_platillo LIKE ?",
@@ -425,7 +435,7 @@ static Future<int> eliminarPedido(int id) async {
 
   // 🔸 NUEVO: Obtener el historial de pedidos de un usuario en específico
   static Future<List<Map<String, dynamic>>> obtenerPedidosPorUsuario(String gmail) async {
-    final db = await initDB();
+    final db = await database;
     return await db.query(
       "tb_pedidos",
       where: "gmail_usuario = ?",
@@ -435,13 +445,13 @@ static Future<int> eliminarPedido(int id) async {
 
   // --- MÉTODOS DE NEGOCIOS ---
   static Future<List<Map<String, dynamic>>> obtenerNegocios() async {
-    final db = await initDB();
+    final db = await database;
     return await db.query("tb_negocios");
   }
 
   // --- MÉTODOS DE NEGOCIOS ---
   static Future<List<Map<String, dynamic>>> buscarNegocios(String consulta) async {
-    final db = await initDB();
+    final db = await database;
     return await db.query(
      "tb_negocios",
      where: "nombre_negocio LIKE ?",
@@ -451,7 +461,7 @@ static Future<int> eliminarPedido(int id) async {
 
   // --- MÉTODOS DE FAVORITOS DE NEGOCIOS ---
   static Future<List<Map<String, dynamic>>> obtenerNegociosFavoritos(String gmail) async {
-    final db = await initDB();
+    final db = await database;
     return await db.rawQuery('''
     SELECT n.* FROM tb_negocios n
     INNER JOIN tb_favoritos f ON n.id = f.id_platillo
@@ -459,6 +469,19 @@ static Future<int> eliminarPedido(int id) async {
   ''', [gmail]);
   }
 
+// 🔸 Guardar platillo usando el Objeto Modelo
+  static Future<int> insertarPlatilloPOO(Platillo platillo) async {
+    final db = await database;
+    // Usamos el método de traducción .toMap() del objeto recibido
+    return await db.insert("tb_platillos", platillo.toMap());
+  }
 
-
+  // 🔸 Obtener los platillos convertidos automáticamente a Objetos POO
+  static Future<List<Platillo>> obtenerPlatillosPOO() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query("tb_platillos");
+    
+    // Convertimos la lista de mapas a una lista de objetos Platillo usando .fromMap
+    return List.generate(maps.length, (i) => Platillo.fromMap(maps[i]));
+  }
 }

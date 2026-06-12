@@ -35,5 +35,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-//Creo que ya puedo ver la API
